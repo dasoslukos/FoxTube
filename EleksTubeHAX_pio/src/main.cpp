@@ -887,12 +887,14 @@ void checkDimmingNeeded()
     { // check if it is in the defined night time
       Serial.println("Set to night time mode (dimmed)!");
       tfts.dimming = TFT_DIMMED_INTENSITY;
+      tfts.InvalidateImageInBuffer();
       backlights.setDimming(true);
     }
     else
     {
       Serial.println("Set to day time mode (normal brightness)!");
       tfts.dimming = 255; // 0..255
+      tfts.InvalidateImageInBuffer();
       backlights.setDimming(false);
     }
     updateClockDisplay(TFTs::force); // redraw all the clock digits -> software dimming will be done here
