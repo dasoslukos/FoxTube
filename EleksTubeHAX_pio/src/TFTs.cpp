@@ -28,15 +28,18 @@ void TFTs::begin()
 
 void TFTs::reinit()
 {
-  // Start with all displays selected.
-  chip_select.begin();
-  chip_select.setAll(); // Start again with all displays selected.
+  if (!enabled) // perform re-init only if displays are actually off. HA sends ON command together with clock face change which causes flickering.
+  {
+    // Start with all displays selected.
+    chip_select.begin();
+    chip_select.setAll(); // Start again with all displays selected.
 
-  pinMode(TFT_ENABLE_PIN, OUTPUT); // Set pin for turning display power on and off.
-  InvalidateImageInBuffer();       // Signal, that the image in the buffer is invalid and needs to be reloaded and refilled
-  init();                          // Initialize the super class (again).
-  fillScreen(TFT_BLACK);           // to avoid/reduce flickering patterns on the screens
-  enableAllDisplays();             // Signal, that the displays are enabled now
+    pinMode(TFT_ENABLE_PIN, OUTPUT); // Set pin for turning display power on and off.
+    InvalidateImageInBuffer();       // Signal, that the image in the buffer is invalid and needs to be reloaded and refilled
+    init();                          // Initialize the super class (again).
+    fillScreen(TFT_BLACK);           // to avoid/reduce flickering patterns on the screens
+    enableAllDisplays();             // Signal, that the displays are enabled now
+  }
 }
 
 void TFTs::clear()
