@@ -226,13 +226,16 @@ void loop()
     MqttCommandPowerReceived = false;
     if (MqttCommandPower)
     {
+      if (!tfts.isEnabled()) // perform reinit, enable, redraw only if displays are actually off. HA sends ON command together with clock face change which causes flickering.
+      {
 #ifdef HARDWARE_Elekstube_CLOCK // original EleksTube hardware and direct clones need a reinit to wake up the displays properly
-      tfts.reinit();
+        tfts.reinit();
 #else
-      tfts.enableAllDisplays(); // for all other clocks, just enable the displays
+       tfts.enableAllDisplays(); // for all other clocks, just enable the displays
 #endif
-      updateClockDisplay(TFTs::force); // redraw all the clock digits -> needed because the displays was blanked before turning off
-      backlights.PowerOn();
+        updateClockDisplay(TFTs::force); // redraw all the clock digits -> needed because the displays was blanked before turning off
+        backlights.PowerOn();
+      }
     }
     else
     {
@@ -248,12 +251,15 @@ void loop()
     MqttCommandMainPowerReceived = false;
     if (MqttCommandMainPower)
     {
+      if (!tfts.isEnabled()) // perform reinit, enable, redraw only if displays are actually off. HA sends ON command together with clock face change which causes flickering.
+      {
 #ifdef HARDWARE_Elekstube_CLOCK // original EleksTube hardware and direct clones need a reinit to wake up the displays properly
-      tfts.reinit();
+        tfts.reinit();
 #else
-      tfts.enableAllDisplays(); // for all other clocks, just enable the displays
+        tfts.enableAllDisplays(); // for all other clocks, just enable the displays
 #endif
-      updateClockDisplay(TFTs::force); // redraw all the clock digits -> needed because the displays was blanked before turning off
+        updateClockDisplay(TFTs::force); // redraw all the clock digits -> needed because the displays was blanked before turning off
+      }
     }
     else
     {
