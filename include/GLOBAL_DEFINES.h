@@ -28,7 +28,8 @@
 // #define HARDWARE_XUNFENG_CLOCK           // Xunfeng copy of the clock (with ESP32-S2 Wroom)
 // #define HARDWARE_NOVELLIFE_CLOCK         // NovelLife clocks
 // #define HARDWARE_PUNKCYBER_CLOCK         // PunkCyber / RGB Glow tube / PCBway clocks
-// #define HARDWARE_IPSTUBE_CLOCK           // Clocks with 8MB flash on PCB (like the IPSTube model H401 and H402)
+// #define HARDWARE_IPSTUBE_CLOCK           // Classic ESP32 IPSTube H401/H402
+// #define HARDWARE_IPSTUBE_S3_CLOCK        // Newer 8MB ESP32-S3 IPSTube revision
 // #define HARDWARE_MARVELTUBES_CLOCK       // MarvelTubes clock with 16MB flash on PCB
 // #define HARDWARE_MARVELTUBESMINI_CLOCK   // MarvelTubes Mini clock with 4MB flash on PCB and ESP C3 Mini
 // #define HARDWARE_DESIGN_CLOCK            // D-Esign clock with ESP32 WROOM-32, small ST7735 80x160 displays, direct GPIO CS lines
@@ -93,7 +94,7 @@
 // Set CS_DIRECT_GPIO for all hardware variants that control each display CS line directly via GPIO
 // (as opposed to using a 74HC595 shift register or I/O expander).
 // Must be defined BEFORE the ACTIVATEDISPLAYS / DIGIT_CS_ACTIVE_LEVEL blocks below that depend on it!
-#if defined(HARDWARE_IPSTUBE_CLOCK) || defined(HARDWARE_MARVELTUBES_CLOCK) || defined(HARDWARE_MARVELTUBES_GEN2_CLOCK) || defined(HARDWARE_DESIGN_CLOCK)
+#if defined(HARDWARE_IPSTUBE_CLOCK) || defined(HARDWARE_IPSTUBE_S3_CLOCK) || defined(HARDWARE_MARVELTUBES_CLOCK) || defined(HARDWARE_MARVELTUBES_GEN2_CLOCK) || defined(HARDWARE_DESIGN_CLOCK)
 #define CS_DIRECT_GPIO
 #endif
 
@@ -380,6 +381,121 @@
  */
 #define USER_SETUP_LOADED
 #endif // #ifdef HARDWARE_IPSTUBE_CLOCK
+
+/************************
+ *   IPSTube ESP32-S3   *
+ ************************/
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+
+#define DEVICE_NAME "IPSTubeS3"
+#define DEVICE_MANUFACTURER "IPSTube"
+#define DEVICE_MODEL "IPSTube ESP32-S3 Tube Clock"
+#define DEVICE_HW_VERSION "ESP32-S3-8MB"
+
+// --------------------------------------------------------------------
+// RGB LEDs
+//
+// Working S3 firmware for this board identifies six WS2812-compatible
+// RGB LEDs on GPIO42.
+// --------------------------------------------------------------------
+#define BACKLIGHTS_PIN (GPIO_NUM_42)
+#define NUM_BACKLIGHT_LEDS (6)
+
+// --------------------------------------------------------------------
+// Button
+//
+// GPIO0 is the ESP32-S3 BOOT button.  Use it provisionally as HAX's
+// one-button menu input.
+// --------------------------------------------------------------------
+#define ONE_BUTTON_ONLY_MENU
+#define BUTTON_MODE_PIN (GPIO_NUM_0)
+
+// --------------------------------------------------------------------
+// RTC
+//
+// This S3 board revision has no known onboard battery-backed RTC.
+// HAX will use its no-RTC code path and obtain normal time via NTP.
+// --------------------------------------------------------------------
+#define RTC_SCL_PIN (-1)
+#define RTC_SDA_PIN (-1)
+
+// --------------------------------------------------------------------
+// LCD backlight
+//
+// Factory-compatible implementation uses GPIO9 as an inverted PWM
+// backlight gate:
+//
+//   PWM 0   = maximum brightness
+//   PWM 255 = off
+//
+// HAX's direct-GPIO CALCDIMVALUE() already performs 255-x inversion.
+// --------------------------------------------------------------------
+#define TFT_ENABLE_PIN (GPIO_NUM_9)
+
+#define TFT_PWM_CHANNEL 0
+#define TFT_PWM_FREQ 25000
+#define TFT_PWM_RESOLUTION 8
+
+#define DIM_WITH_ENABLE_PIN_PWM
+#define DIM_SKIP_SOFTWARE_ALPHA
+
+// Avoid unnecessary ST7789 reinitialization when toggling display
+// brightness/power.
+#define TFT_SKIP_REINIT
+
+// --------------------------------------------------------------------
+// Displays
+//
+// Six ST7789 135x240 LCDs share MOSI/SCLK/DC/RST.
+// Each LCD has its own direct GPIO CS line; those six CS GPIOs are
+// defined in ChipSelect.cpp.
+//
+// Confirmed S3 board:
+//   RESET = GPIO4
+//   DC/RS = GPIO5
+//   MOSI  = GPIO6
+//   SCLK  = GPIO7
+// --------------------------------------------------------------------
+#define ST7789_DRIVER
+
+#define TFT_WIDTH 135
+#define TFT_HEIGHT 240
+
+// Three-wire SPI: display data is written via MOSI/SDA.
+// No dedicated MISO connection exists.
+#define TFT_SDA_READ
+#define TFT_MISO (-1)
+
+#define TFT_MOSI (GPIO_NUM_6)
+#define TFT_SCLK (GPIO_NUM_7)
+
+#define TFT_CS (-1)
+#define TFT_DC (GPIO_NUM_5)
+#define TFT_RST (GPIO_NUM_4)
+
+#define TOUCH_CS (-1)
+
+// --------------------------------------------------------------------
+// Fonts
+// --------------------------------------------------------------------
+#define LOAD_FONT2
+#define LOAD_FONT4
+#define SMOOTH_FONT
+
+// Start conservatively at 40 MHz.
+//
+// Nixie_Pixi demonstrates the same hardware operating at 80 MHz,
+// but there is no reason to introduce that variable during the first
+// HAX bring-up.
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY 20000000
+
+/*
+ * Tell TFT_eSPI to use these settings rather than its defaults.
+ */
+#define USER_SETUP_LOADED
+
+#endif // #ifdef HARDWARE_IPSTUBE_S3_CLOCK
 
 /*************************
  *    NovelLife Clone    *

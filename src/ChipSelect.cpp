@@ -101,6 +101,31 @@ const int lcdEnablePins[NUM_DIGITS] = {GPIO_NUM_15, GPIO_NUM_2, GPIO_NUM_27, GPI
 const int numLCDs = NUM_DIGITS;
 #endif
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+// New ESP32-S3 IPSTube revision.
+//
+// Physical display order reported by the S3 board:
+//   Screen 1 -> GPIO15
+//   Screen 2 -> GPIO16
+//   Screen 3 -> GPIO17
+//   Screen 4 -> GPIO18
+//   Screen 5 -> GPIO8
+//   Screen 6 -> GPIO3
+//
+// HAX's logical digit order is handled by the existing ChipSelect
+// abstraction; these are the six physical direct-CS GPIO lines.
+const int lcdEnablePins[NUM_DIGITS] = {
+    GPIO_NUM_15,
+    GPIO_NUM_16,
+    GPIO_NUM_17,
+    GPIO_NUM_18,
+    GPIO_NUM_8,
+    GPIO_NUM_3
+};
+
+const int numLCDs = NUM_DIGITS;
+#endif
+
 #ifdef HARDWARE_MARVELTUBES_CLOCK
 // Define the pins for each LCD's enable wire (left to right: hours tens .. seconds ones)
 const int lcdEnablePins[NUM_DIGITS] = {15, 33, 34, 35, 36, 37};
