@@ -9,6 +9,7 @@
 
 class Backlights;
 class Clock;
+class DisplaySchedule;
 class StoredConfig;
 class TFTs;
 
@@ -17,7 +18,7 @@ class WebUI
 public:
   WebUI();
 
-  void begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_);
+  void begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_, DisplaySchedule *display_schedule_);
   void loop();
 
 private:
@@ -26,6 +27,7 @@ private:
   TFTs *tfts;
   Clock *clock;
   StoredConfig *stored_config;
+  DisplaySchedule *display_schedule;
   bool started;
   bool mdns_started;
 
@@ -36,6 +38,7 @@ private:
   void handleStrip();
   void handleClock();
   void handlePanorama();
+  void handleDisplay();
   void handleNotFound();
 
   void sendOk();
@@ -43,6 +46,7 @@ private:
   uint16_t htmlColorToPhase(const String &value);
   String colorToHtml(uint32_t color);
   String jsonEscape(const String &value);
+  bool parseTimeMinutes(const String &value, uint16_t &minutes);
 };
 
 #endif // HARDWARE_IPSTUBE_S3_CLOCK

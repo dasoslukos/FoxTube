@@ -259,6 +259,13 @@ const String Menu::state_str[Menu::num_states] = {
     "strip_color",
     "strip_intensity",
 #endif
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    "display_schedule",
+    "display_day_start",
+    "display_day_brightness",
+    "display_night_start",
+    "display_night_brightness",
+#endif
     "twelve_hour",
     "blank_hours_zero",
     "utc_offset_hour",
@@ -274,6 +281,13 @@ const String Menu::state_str[Menu::num_states] = {
     "strip_pattern",
     "strip_color",
     "strip_intensity",
+#endif
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    "display_schedule",
+    "display_day_start",
+    "display_day_brightness",
+    "display_night_start",
+    "display_night_brightness",
 #endif
     "twelve_hour",
     "blank_hours_zero",

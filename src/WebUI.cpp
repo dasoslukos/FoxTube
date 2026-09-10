@@ -9,6 +9,7 @@
 
 #include "Backlights.h"
 #include "Clock.h"
+#include "DisplaySchedule.h"
 #include "StoredConfig.h"
 #include "TFTs.h"
 
@@ -22,7 +23,7 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 <style>
 :root{color-scheme:dark;--bg:#09070f;--card:#151020;--card2:#1b1428;--text:#f7eefc;--muted:#aa9bb8;--orange:#ff8a36;--purple:#9f68ff;--blue:#5aa7ff;--line:#30253f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#25133a 0,transparent 34%),radial-gradient(circle at 80% 10%,#132649 0,transparent 28%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh}
-.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],button{width:100%}select,button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.big.off{background:#17111f;border:1px solid #453655}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],button{width:100%}select,input[type=time],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.big.off{background:#17111f;border:1px solid #453655}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}
 @media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{grid-template-columns:110px 1fr auto}.status{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -52,6 +53,16 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
       <div class="row"><div class="label">Leading zero</div><div class="toggle"><button id="zeroOn">Show</button><button id="zeroOff">Blank</button></div><span></span></div>
     </section>
 
+    <section class="card wide accent-blue">
+      <h2>Display Day / Night</h2>
+      <div class="row"><div class="label">Auto schedule</div><div class="toggle"><button id="displayAutoOn">On</button><button id="displayAutoOff">Off</button></div><span class="mode" id="displayMode">—</span></div>
+      <div class="row"><div class="label">Day starts</div><input id="dayStart" type="time" step="60"><span></span></div>
+      <div class="row"><div class="label">Day brightness</div><input id="dayBrightness" type="range" min="0" max="255" step="1"><div class="value" id="dayBrightnessValue"></div></div>
+      <div class="row"><div class="label">Night starts</div><input id="nightStart" type="time" step="60"><span></span></div>
+      <div class="row"><div class="label">Night brightness</div><input id="nightBrightness" type="range" min="0" max="255" step="1"><div class="value" id="nightBrightnessValue"></div></div>
+      <div class="hint">Controls the six TFT screens only. Tube LEDs and the bottom strip keep their own independent brightness settings.</div>
+    </section>
+
     <section class="card accent-purple">
       <h2>Panorama</h2>
       <button class="big" id="panorama">Show Fox Panorama</button>
@@ -78,11 +89,60 @@ fillPatterns($('tubePattern'));fillPatterns($('stripPattern'));
 async function post(url,data){const body=new URLSearchParams(data);const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});if(!r.ok)throw new Error(await r.text());showToast();await loadState()}
 function showToast(){const t=$('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),900)}
 function active(id,on){$(id).classList.toggle('active',!!on)}
-function apply(s){state=s;$('tubePattern').value=s.tube.pattern;$('tubeColor').value=s.tube.color;$('tubeIntensity').value=s.tube.intensity;$('tubeIntensityValue').textContent=s.tube.intensity+'/7';if(s.strip){$('stripPattern').value=s.strip.pattern;$('stripColor').value=s.strip.color;$('stripIntensity').value=s.strip.intensity;$('stripIntensityValue').textContent=s.strip.intensity+'/7'}else{$('stripCard').style.display='none'};$('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');$('face').value=s.clock.face;active('h12',s.clock.twelveHour);active('h24',!s.clock.twelveHour);active('zeroOn',!s.clock.blankZero);active('zeroOff',s.clock.blankZero);const p=$('panorama');p.textContent=s.panorama?'Return to Clock':'Show Fox Panorama';p.classList.toggle('off',s.panorama);$('ip').textContent=s.device.ip;$('rssi').textContent=s.device.rssi+' dBm';$('version').textContent=s.device.version}
+function apply(s){
+state=s;
+$('tubePattern').value=s.tube.pattern;
+$('tubeColor').value=s.tube.color;
+$('tubeIntensity').value=s.tube.intensity;
+$('tubeIntensityValue').textContent=s.tube.intensity+'/7';
+if(s.strip){
+  $('stripPattern').value=s.strip.pattern;
+  $('stripColor').value=s.strip.color;
+  $('stripIntensity').value=s.strip.intensity;
+  $('stripIntensityValue').textContent=s.strip.intensity+'/7'
+}else{
+  $('stripCard').style.display='none'
+}
+$('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');
+$('face').value=s.clock.face;
+active('h12',s.clock.twelveHour);
+active('h24',!s.clock.twelveHour);
+active('zeroOn',!s.clock.blankZero);
+active('zeroOff',s.clock.blankZero);
+if(s.display){
+  active('displayAutoOn',s.display.enabled);
+  active('displayAutoOff',!s.display.enabled);
+  $('dayStart').value=s.display.dayStart;
+  $('nightStart').value=s.display.nightStart;
+  $('dayBrightness').value=s.display.dayBrightness;
+  $('nightBrightness').value=s.display.nightBrightness;
+  $('dayBrightnessValue').textContent=s.display.dayBrightness+'/255';
+  $('nightBrightnessValue').textContent=s.display.nightBrightness+'/255';
+  const dm=$('displayMode');
+  dm.textContent=(s.display.isNight?'Night':'Day')+' · '+s.display.appliedBrightness;
+  dm.classList.toggle('night',s.display.isNight);
+  dm.classList.toggle('day',!s.display.isNight);
+}
+const p=$('panorama');
+p.textContent=s.panorama?'Return to Clock':'Show Fox Panorama';
+p.classList.toggle('off',s.panorama);
+$('ip').textContent=s.device.ip;
+$('rssi').textContent=s.device.rssi+' dBm';
+$('version').textContent=s.device.version
+}
 async function loadState(){try{const r=await fetch('/api/state',{cache:'no-store'});if(r.ok)apply(await r.json())}catch(e){console.log(e)}}
 $('tubePattern').onchange=e=>post('/api/tube',{pattern:e.target.value});$('tubeColor').onchange=e=>post('/api/tube',{color:e.target.value});$('tubeIntensity').oninput=e=>$('tubeIntensityValue').textContent=e.target.value+'/7';$('tubeIntensity').onchange=e=>post('/api/tube',{intensity:e.target.value});
 $('stripPattern').onchange=e=>post('/api/strip',{pattern:e.target.value});$('stripColor').onchange=e=>post('/api/strip',{color:e.target.value});$('stripIntensity').oninput=e=>$('stripIntensityValue').textContent=e.target.value+'/7';$('stripIntensity').onchange=e=>post('/api/strip',{intensity:e.target.value});
-$('face').onchange=e=>post('/api/clock',{face:e.target.value});$('h12').onclick=()=>post('/api/clock',{twelve:'1'});$('h24').onclick=()=>post('/api/clock',{twelve:'0'});$('zeroOn').onclick=()=>post('/api/clock',{blank:'0'});$('zeroOff').onclick=()=>post('/api/clock',{blank:'1'});$('panorama').onclick=()=>post('/api/panorama',{enabled:state.panorama?'0':'1'});
+$('face').onchange=e=>post('/api/clock',{face:e.target.value});$('h12').onclick=()=>post('/api/clock',{twelve:'1'});$('h24').onclick=()=>post('/api/clock',{twelve:'0'});$('zeroOn').onclick=()=>post('/api/clock',{blank:'0'});$('zeroOff').onclick=()=>post('/api/clock',{blank:'1'});
+$('displayAutoOn').onclick=()=>post('/api/display',{enabled:'1'});
+$('displayAutoOff').onclick=()=>post('/api/display',{enabled:'0'});
+$('dayStart').onchange=e=>post('/api/display',{dayStart:e.target.value});
+$('nightStart').onchange=e=>post('/api/display',{nightStart:e.target.value});
+$('dayBrightness').oninput=e=>$('dayBrightnessValue').textContent=e.target.value+'/255';
+$('dayBrightness').onchange=e=>post('/api/display',{dayBrightness:e.target.value});
+$('nightBrightness').oninput=e=>$('nightBrightnessValue').textContent=e.target.value+'/255';
+$('nightBrightness').onchange=e=>post('/api/display',{nightBrightness:e.target.value});
+$('panorama').onclick=()=>post('/api/panorama',{enabled:state.panorama?'0':'1'});
 loadState();setInterval(loadState,15000);
 </script>
 </body>
@@ -91,16 +151,17 @@ loadState();setInterval(loadState,15000);
 
 WebUI::WebUI()
     : server(80), backlights(nullptr), tfts(nullptr), clock(nullptr),
-      stored_config(nullptr), started(false), mdns_started(false)
+      stored_config(nullptr), display_schedule(nullptr), started(false), mdns_started(false)
 {
 }
 
-void WebUI::begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_)
+void WebUI::begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_, DisplaySchedule *display_schedule_)
 {
   backlights = backlights_;
   tfts = tfts_;
   clock = clock_;
   stored_config = stored_config_;
+  display_schedule = display_schedule_;
 
   installRoutes();
   server.begin();
@@ -151,6 +212,7 @@ void WebUI::installRoutes()
   server.on("/api/strip", HTTP_POST, [this]() { handleStrip(); });
   server.on("/api/clock", HTTP_POST, [this]() { handleClock(); });
   server.on("/api/panorama", HTTP_POST, [this]() { handlePanorama(); });
+  server.on("/api/display", HTTP_POST, [this]() { handleDisplay(); });
   server.onNotFound([this]() { handleNotFound(); });
 }
 
@@ -186,6 +248,20 @@ String WebUI::jsonEscape(const String &value)
       out += c;
   }
   return out;
+}
+
+bool WebUI::parseTimeMinutes(const String &value, uint16_t &minutes)
+{
+  if (value.length() != 5 || value.charAt(2) != ':')
+    return false;
+
+  const int hour = value.substring(0, 2).toInt();
+  const int minute = value.substring(3, 5).toInt();
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59)
+    return false;
+
+  minutes = uint16_t(hour * 60 + minute);
+  return true;
 }
 
 void WebUI::handleState()
@@ -224,6 +300,34 @@ void WebUI::handleState()
   json += clock->getTwelveHour() ? "true" : "false";
   json += ",\"blankZero\":";
   json += clock->getBlankHoursZero() ? "true" : "false";
+  json += "},";
+
+  json += "\"display\":{";
+  json += "\"enabled\":";
+  json += display_schedule->getEnabled() ? "true" : "false";
+
+  const uint16_t day_minutes = display_schedule->getDayStartMinutes();
+  const uint16_t night_minutes = display_schedule->getNightStartMinutes();
+  char time_buffer[6];
+
+  snprintf(time_buffer, sizeof(time_buffer), "%02u:%02u", day_minutes / 60, day_minutes % 60);
+  json += ",\"dayStart\":\"";
+  json += time_buffer;
+  json += "\"";
+
+  snprintf(time_buffer, sizeof(time_buffer), "%02u:%02u", night_minutes / 60, night_minutes % 60);
+  json += ",\"nightStart\":\"";
+  json += time_buffer;
+  json += "\"";
+
+  json += ",\"dayBrightness\":";
+  json += String(display_schedule->getDayBrightness());
+  json += ",\"nightBrightness\":";
+  json += String(display_schedule->getNightBrightness());
+  json += ",\"isNight\":";
+  json += display_schedule->isNight(clock->getHour24(), clock->getMinute()) ? "true" : "false";
+  json += ",\"appliedBrightness\":";
+  json += String(display_schedule->getAppliedBrightness());
   json += "},";
 
   json += "\"panorama\":";
@@ -362,6 +466,54 @@ void WebUI::handleClock()
 
   stored_config->save();
   redrawClock();
+  sendOk();
+}
+
+void WebUI::handleDisplay()
+{
+  if (display_schedule == nullptr)
+  {
+    server.send(503, "text/plain", "Display schedule is not available.");
+    return;
+  }
+
+  if (server.hasArg("enabled"))
+    display_schedule->setEnabled(server.arg("enabled").toInt() != 0);
+
+  uint16_t minutes = 0;
+  if (server.hasArg("dayStart"))
+  {
+    if (!parseTimeMinutes(server.arg("dayStart"), minutes))
+    {
+      server.send(400, "text/plain", "Invalid dayStart time.");
+      return;
+    }
+    display_schedule->setDayStartMinutes(minutes);
+  }
+
+  if (server.hasArg("nightStart"))
+  {
+    if (!parseTimeMinutes(server.arg("nightStart"), minutes))
+    {
+      server.send(400, "text/plain", "Invalid nightStart time.");
+      return;
+    }
+    display_schedule->setNightStartMinutes(minutes);
+  }
+
+  if (server.hasArg("dayBrightness"))
+  {
+    const int brightness = constrain(server.arg("dayBrightness").toInt(), 0, 255);
+    display_schedule->setDayBrightness(uint8_t(brightness));
+  }
+
+  if (server.hasArg("nightBrightness"))
+  {
+    const int brightness = constrain(server.arg("nightBrightness").toInt(), 0, 255);
+    display_schedule->setNightBrightness(uint8_t(brightness));
+  }
+
+  display_schedule->applyNow(clock->getHour24(), clock->getMinute());
   sendOk();
 }
 

@@ -28,6 +28,13 @@ public:
     strip_color,         // Change the bottom LED strip color independently.
     strip_intensity,     // Change the bottom LED strip brightness independently.
 #endif
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    display_schedule,    // Enable/disable automatic day/night screen brightness.
+    display_day_start,   // Set the beginning of day mode.
+    display_day_brightness, // Set TFT brightness used during day mode.
+    display_night_start, // Set the beginning of night mode.
+    display_night_brightness, // Set TFT brightness used during night mode.
+#endif
     twelve_hour,         // Select 12 hour or 24 hour format.
     blank_hours_zero,    // Whether to blank the leading zero in the hours column.
     utc_offset_hour,     // Change the UTC offset by an hour.
@@ -47,6 +54,13 @@ public:
     strip_pattern,       // Change the bottom LED strip pattern independently.
     strip_color,         // Change the bottom LED strip color independently.
     strip_intensity,     // Change the bottom LED strip brightness independently.
+#endif
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    display_schedule,    // Enable/disable automatic day/night screen brightness.
+    display_day_start,   // Set the beginning of day mode.
+    display_day_brightness, // Set TFT brightness used during day mode.
+    display_night_start, // Set the beginning of night mode.
+    display_night_brightness, // Set TFT brightness used during night mode.
 #endif
     twelve_hour,         // Select 12 hour or 24 hour format.
     blank_hours_zero,    // Whether to blank the leading zero in the hours column.

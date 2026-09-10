@@ -22,6 +22,9 @@
 
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
 #include "WebUI.h"
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+#include "DisplaySchedule.h"
+#endif
 #endif
 
 #ifdef GEOLOCATION_ENABLED
@@ -154,6 +157,7 @@ Menu menu;
 StoredConfig stored_config;
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
 WebUI webui;
+DisplaySchedule display_schedule;
 #endif
 
 #ifdef GEOLOCATION_ENABLED
@@ -253,6 +257,9 @@ void setup()
 
   // Setup the displays (TFTs) initaly and show bootup message(s).
   tfts.begin(); // ...and count number of clock faces available...
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  display_schedule.begin(&tfts);
+#endif
   tfts.fillScreen(TFT_BLACK);
 
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -351,7 +358,7 @@ void setup()
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
   // Start the LAN-only FoxTube browser controls after Wi-Fi, clock, LEDs,
   // and displays are initialized. The page itself lives in program flash.
-  webui.begin(&backlights, &tfts, &uclock, &stored_config);
+  webui.begin(&backlights, &tfts, &uclock, &stored_config, &display_schedule);
 #endif
 
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -368,6 +375,9 @@ void setup()
   // Start up the clock displays.
   tfts.fillScreen(TFT_BLACK);
   uclock.loop();
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+#endif
   updateClockDisplay(TFTs::force); // Draw all the clock digits
   Serial.println("Starting main loop...");
 }
@@ -687,8 +697,11 @@ void loop()
   backlights.loop();
   uclock.loop();
 
-#ifdef DIMMING
-  checkDimmingNeeded(); // Night or day time brightness change
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  // FoxTube S3 uses the persistent runtime day/night display schedule.
+  display_schedule.loop(uclock.getHour24(), uclock.getMinute());
+#elif defined(DIMMING)
+  checkDimmingNeeded(); // Legacy compile-time night/day dimming for other hardware.
 #endif
 
   updateClockDisplay(); // Draw only the changed clock digits!
@@ -802,6 +815,73 @@ void loop()
         tfts.println(backlights.getStripIntensity());
       }
 #endif
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+      // Automatic Day/Night Display Brightness
+      else if (menu_state == Menu::display_schedule)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.setEnabled(!display_schedule.getEnabled());
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        setupMenu();
+        tfts.println("Screen auto");
+        tfts.println("brightness:");
+        tfts.println(display_schedule.getEnabled() ? "ON" : "OFF");
+      }
+      // Day Mode Start
+      else if (menu_state == Menu::display_day_start)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.adjustDayStartMinutes(menu_change * 60);
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        const uint16_t minutes = display_schedule.getDayStartMinutes();
+        setupMenu();
+        tfts.println("Day starts:");
+        tfts.printf("%02u:%02u\n", minutes / 60, minutes % 60);
+      }
+      // Day Display Brightness
+      else if (menu_state == Menu::display_day_brightness)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.adjustDayBrightness(menu_change * 16);
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        setupMenu();
+        tfts.println("Day screen");
+        tfts.println("brightness:");
+        tfts.println(display_schedule.getDayBrightness());
+      }
+      // Night Mode Start
+      else if (menu_state == Menu::display_night_start)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.adjustNightStartMinutes(menu_change * 60);
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        const uint16_t minutes = display_schedule.getNightStartMinutes();
+        setupMenu();
+        tfts.println("Night starts:");
+        tfts.printf("%02u:%02u\n", minutes / 60, minutes % 60);
+      }
+      // Night Display Brightness
+      else if (menu_state == Menu::display_night_brightness)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.adjustNightBrightness(menu_change * 16);
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        setupMenu();
+        tfts.println("Night screen");
+        tfts.println("brightness:");
+        tfts.println(display_schedule.getNightBrightness());
+      }
+#endif
       // 12 Hour or 24 Hour mode?
       else if (menu_state == Menu::twelve_hour)
       {
@@ -854,8 +934,10 @@ void loop()
 
           uclock.setTimeZoneOffset(newOffset); // set the new offset
           uclock.loop();                       // update the clock time and redraw the changed digits -> will "flicker" the menu for a short time, but without, menu is not redrawn correctly
-#ifdef DIMMING
-          checkDimmingNeeded(); // check if we need dimming for the night, because timezone was changed
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+#elif defined(DIMMING)
+          checkDimmingNeeded(); // Legacy dimming update after timezone change.
 #endif
           currOffset = uclock.getTimeZoneOffset(); // get the new offset as current offset for the menu
         }
@@ -909,8 +991,10 @@ void loop()
 
           uclock.setTimeZoneOffset(newOffset); // set the new offset
           uclock.loop();                       // update the clock time and redraw the changed digits -> will "flicker" the menu for a short time, but without, menu is not redrawn correctly
-#ifdef DIMMING
-          checkDimmingNeeded(); // check if we need dimming for the night, because timezone was changed
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+#elif defined(DIMMING)
+          checkDimmingNeeded(); // Legacy dimming update after timezone change.
 #endif
           currOffset = uclock.getTimeZoneOffset(); // get the new offset as current offset for the menu
         }
