@@ -17,6 +17,9 @@
 #include <math.h>
 #include "StoredConfig.h"
 #include <Adafruit_NeoPixel.h>
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+#include <Preferences.h>
+#endif
 
 class Backlights : public Adafruit_NeoPixel
 {
@@ -90,6 +93,36 @@ public:
   void adjustIntensity(int16_t adj);
   uint8_t getIntensity() { return config->intensity; }
 
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+  // The IPSTube bottom strip is physically chained after the six tube LEDs.
+  // Keep its pattern/color/intensity independent from the tube backlights.
+  void setStripPattern(patterns p)
+  {
+    strip_config.pattern = uint8_t(p);
+    pattern_needs_init = true;
+  }
+  patterns getStripPattern() { return patterns(strip_config.pattern); }
+  String getStripPatternStr() { return patterns_str[strip_config.pattern]; }
+  void setNextStripPattern(int8_t i = 1);
+
+  void setStripColorPhase(uint16_t phase)
+  {
+    strip_config.color_phase = phase % max_phase;
+    pattern_needs_init = true;
+  }
+  void adjustStripColorPhase(int16_t adj);
+  uint16_t getStripColorPhase() { return strip_config.color_phase; }
+  uint32_t getStripColor() { return phaseToColor(strip_config.color_phase); }
+
+  void setStripIntensity(uint8_t intensity);
+  void adjustStripIntensity(int16_t adj);
+  uint8_t getStripIntensity() { return strip_config.intensity; }
+
+  // Stored separately from the normal HAX config blob so adding this feature
+  // cannot invalidate the user's existing clock/time/Wi-Fi preferences.
+  void saveStripConfig();
+#endif
+
   void setDimming(bool dim)
   {
     dimming = dim;
@@ -112,6 +145,25 @@ private:
 
   // Pattern configs, get backed up.
   StoredConfig::Config::Backlights *config;
+
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+  struct StripConfig
+  {
+    uint8_t pattern;
+    uint16_t color_phase;
+    uint8_t intensity;
+  };
+
+  StripConfig strip_config = {};
+  Preferences strip_prefs;
+
+  void loadStripConfig();
+  void loopSplitBacklights();
+  void renderZone(uint8_t first_pixel, uint8_t pixel_count, patterns pattern,
+                  uint16_t color_phase, uint8_t intensity);
+  uint8_t staticBrightnessForLevel(uint8_t intensity);
+  uint32_t scaleColor(uint32_t color, uint8_t brightness);
+#endif
 
   // Pattern methods
   void testPattern();

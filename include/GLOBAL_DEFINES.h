@@ -395,11 +395,20 @@
 // --------------------------------------------------------------------
 // RGB LEDs
 //
-// Working S3 firmware for this board identifies six WS2812-compatible
-// RGB LEDs on GPIO42.
+// The ESP32-S3 IPSTube uses GPIO42 for the WS2812-compatible LED chain.
+// Boards with the optional bottom LED strip have 34 LEDs total:
+//   6 LEDs behind the six tube displays + 28 LEDs in the bottom strip.
+//
+// Enable HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE in platformio.ini
+// for boards fitted with the bottom strip.
 // --------------------------------------------------------------------
 #define BACKLIGHTS_PIN (GPIO_NUM_42)
+
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+#define NUM_BACKLIGHT_LEDS (34)
+#else
 #define NUM_BACKLIGHT_LEDS (6)
+#endif
 
 // --------------------------------------------------------------------
 // Button

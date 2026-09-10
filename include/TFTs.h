@@ -48,6 +48,14 @@ public:
   }
   void showDigit(uint8_t digit);
 
+  // Six-screen panorama mode.
+  // Files base_file_index .. base_file_index+5 are displayed
+  // physically LEFT -> RIGHT across the six tubes.
+  void enablePanorama(uint8_t base_file_index = 100);
+  void disablePanorama();
+  void redrawPanorama();
+  bool isPanoramaMode() const { return panorama_mode; }
+
   // Controls the power to all displays
   void enableAllDisplays();
   void disableAllDisplays();
@@ -68,6 +76,10 @@ public:
 private:
   uint8_t digits[NUM_DIGITS];
   bool TFTsEnabled = false;
+
+  // Panorama state. base file 100 means 100.bmp .. 105.bmp.
+  bool panorama_mode = false;
+  uint8_t panorama_base_file = 100;
 
   bool FileExists(const char *path);
   int8_t CountNumberOfClockFaces();

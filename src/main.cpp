@@ -20,6 +20,10 @@
 #include "TFTs.h"
 #include "WiFi_WPS.h"
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+#include "WebUI.h"
+#endif
+
 #ifdef GEOLOCATION_ENABLED
 #include "IPGeolocation_AO.h"
 #endif
@@ -148,6 +152,9 @@ TFTs tfts;
 Clock uclock;
 Menu menu;
 StoredConfig stored_config;
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+WebUI webui;
+#endif
 
 #ifdef GEOLOCATION_ENABLED
 double GeoLocTZoffset = 0;
@@ -341,6 +348,12 @@ void setup()
   }
   tfts.current_graphic = uclock.getActiveGraphicIdx();
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  // Start the LAN-only FoxTube browser controls after Wi-Fi, clock, LEDs,
+  // and displays are initialized. The page itself lives in program flash.
+  webui.begin(&backlights, &tfts, &uclock, &stored_config);
+#endif
+
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
   tfts.println("Done with Setup!");
   Serial.println("\nDone with Setup!");
@@ -368,6 +381,10 @@ void loop()
 
   // Do all the maintenance work.
   WifiReconnect(); // If not connected to WiFi, attempt to reconnect
+
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  webui.loop(); // Service local browser control requests.
+#endif
 
 #if defined(MQTT_PLAIN_ENABLED) || defined(MQTT_HOME_ASSISTANT)
   MQTTLoopFrequently();
@@ -625,6 +642,28 @@ void loop()
 
   menu.loop(buttons); // Must be called after buttons.loop()
 
+#if defined(ONE_BUTTON_ONLY_MENU) && defined(HARDWARE_IPSTUBE_S3_CLOCK)
+  /*
+   * ESP32-S3 IPSTube: long press while idle toggles the six-screen
+   * panorama. Short presses keep their existing menu behaviour.
+   *
+   * Menu::loop() intentionally does not consume down_long_edge while
+   * idle, so it is safe to handle it here after the menu state machine.
+   */
+  if (menu.getState() == Menu::idle && buttons.mode.isDownLongEdge())
+  {
+    if (tfts.isPanoramaMode())
+    {
+      tfts.disablePanorama();
+      updateClockDisplay(TFTs::force);
+    }
+    else
+    {
+      tfts.enablePanorama(100);
+    }
+  }
+#endif
+
 #ifdef CAPACITIVE_TOUCH_BUTTONS
   // D-Esign: LEFT long press while idle -> toggle display and backlight power.
   if (menu.isPowerToggle())
@@ -666,16 +705,24 @@ void loop()
 
     if (menu_state == Menu::idle)
     {
-      // We just changed into idle, so force a redraw of all clock digits and save the config.
-      updateClockDisplay(TFTs::force); // Redraw everything
+      // We just changed into idle. Restore whichever display mode was
+      // active before entering the menu, then save the config.
+      if (tfts.isPanoramaMode())
+        tfts.redrawPanorama();
+      else
+        updateClockDisplay(TFTs::force);
+
       Serial.println();
       Serial.print("Saving config! Triggered from leaving menu...");
       stored_config.save();
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+      backlights.saveStripConfig();
+#endif
       Serial.println(" Done.");
     }
     else
     {
-      // Backlight Pattern
+      // Tube Backlight Pattern
       if (menu_state == Menu::backlight_pattern)
       {
         if (menu_change != 0)
@@ -683,10 +730,13 @@ void loop()
           backlights.setNextPattern(menu_change);
         }
         setupMenu();
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+        tfts.println("Tube LED");
+#endif
         tfts.println("Pattern:");
         tfts.println(backlights.getPatternStr());
       }
-      // Backlight Color
+      // Tube Backlight Color
       else if (menu_state == Menu::pattern_color)
       {
         if (menu_change != 0)
@@ -694,10 +744,13 @@ void loop()
           backlights.adjustColorPhase(menu_change * 16);
         }
         setupMenu();
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+        tfts.println("Tube LED");
+#endif
         tfts.println("Color:");
         tfts.printf("%06X\n", backlights.getColor());
       }
-      // Backlight Intensity
+      // Tube Backlight Intensity
       else if (menu_state == Menu::backlight_intensity)
       {
         if (menu_change != 0)
@@ -705,9 +758,50 @@ void loop()
           backlights.adjustIntensity(menu_change);
         }
         setupMenu();
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+        tfts.println("Tube LED");
+#endif
         tfts.println("Intensity:");
         tfts.println(backlights.getIntensity());
       }
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+      // Bottom Strip Pattern
+      else if (menu_state == Menu::strip_pattern)
+      {
+        if (menu_change != 0)
+        {
+          backlights.setNextStripPattern(menu_change);
+        }
+        setupMenu();
+        tfts.println("Bottom LED");
+        tfts.println("Pattern:");
+        tfts.println(backlights.getStripPatternStr());
+      }
+      // Bottom Strip Color
+      else if (menu_state == Menu::strip_color)
+      {
+        if (menu_change != 0)
+        {
+          backlights.adjustStripColorPhase(menu_change * 16);
+        }
+        setupMenu();
+        tfts.println("Bottom LED");
+        tfts.println("Color:");
+        tfts.printf("%06X\n", backlights.getStripColor());
+      }
+      // Bottom Strip Intensity
+      else if (menu_state == Menu::strip_intensity)
+      {
+        if (menu_change != 0)
+        {
+          backlights.adjustStripIntensity(menu_change);
+        }
+        setupMenu();
+        tfts.println("Bottom LED");
+        tfts.println("Intensity:");
+        tfts.println(backlights.getStripIntensity());
+      }
+#endif
       // 12 Hour or 24 Hour mode?
       else if (menu_state == Menu::twelve_hour)
       {

@@ -16,7 +16,42 @@ void TFTs::begin()
   pinMode(TFT_ENABLE_PIN, OUTPUT); // Set pin for turning display power on and off.
 #endif
   InvalidateImageInBuffer(); // Signal, that the image in the buffer is invalid and needs to be reloaded and refilled
-  init(); // Initialize the super class.
+
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  // ------------------------------------------------------------------
+  // ESP32-S3 IPSTube SPI bring-up
+  //
+  // TFT_eSPI normally calls SPI.begin() from init(), but the first
+  // hardware test panicked inside SPI.beginTransaction() with the
+  // underlying SPI bus apparently not initialized.
+  //
+  // Explicitly initialise the shared display SPI bus here before
+  // entering TFT_eSPI::init(), and print the HAL bus pointer before
+  // and after so we can verify whether spiStartBus() succeeded.
+  // ------------------------------------------------------------------
+
+  Serial.printf(
+      "IPSTube S3: SPI bus before explicit begin = %p\n",
+      (void *)SPI.bus()
+  );
+
+  SPI.begin(TFT_SCLK, TFT_MISO, TFT_MOSI, -1);
+
+  Serial.printf(
+      "IPSTube S3: SPI bus after explicit begin  = %p\n",
+      (void *)SPI.bus()
+  );
+
+  Serial.printf(
+      "IPSTube S3: SPI pins SCLK=%d MISO=%d MOSI=%d CS=%d\n",
+      TFT_SCLK,
+      TFT_MISO,
+      TFT_MOSI,
+      -1
+  );
+#endif
+
+  init(); // Initialize the TFT_eSPI super class.
 #ifdef CS_DIRECT_GPIO
   // After TFT_eSPI::init(), the VSPI hardware may have reconfigured one of the CS GPIO pins
   // as a default SPI signal (e.g. GPIO5 as VSPI SS, GPIO19 as VSPI MISO), leaving it as an
@@ -170,12 +205,100 @@ void TFTs::toggleAllDisplays()
   }
 }
 
+void TFTs::enablePanorama(uint8_t base_file_index)
+{
+  panorama_base_file = base_file_index;
+  panorama_mode = true;
+
+  Serial.print("Panorama mode ON, base file = ");
+  Serial.println(panorama_base_file);
+
+  redrawPanorama();
+}
+
+void TFTs::disablePanorama()
+{
+  panorama_mode = false;
+  InvalidateImageInBuffer();
+
+  Serial.println("Panorama mode OFF");
+}
+
+void TFTs::redrawPanorama()
+{
+  if (!TFTsEnabled)
+    return;
+
+  /*
+   * Physical screen order LEFT -> RIGHT:
+   *
+   *   HH tens | HH ones | MM tens | MM ones | SS tens | SS ones
+   *
+   * The S3 ChipSelect mapping already translates these logical digit
+   * positions to the correct physical CS GPIOs.
+   */
+  static const uint8_t panorama_digits[NUM_DIGITS] = {
+      HOURS_TENS,
+      HOURS_ONES,
+      MINUTES_TENS,
+      MINUTES_ONES,
+      SECONDS_TENS,
+      SECONDS_ONES};
+
+  Serial.println("Drawing six-screen panorama...");
+
+  for (uint8_t panel = 0; panel < NUM_DIGITS; panel++)
+  {
+    const uint8_t file_index = panorama_base_file + panel;
+    char filename[12];
+
+#ifdef USE_CLK_FILES
+    snprintf(filename, sizeof(filename), "/%u.clk", file_index);
+#else
+    snprintf(filename, sizeof(filename), "/%u.bmp", file_index);
+#endif
+
+    chip_select.setDigit(panorama_digits[panel]);
+
+    Serial.print("  panel ");
+    Serial.print(panel);
+    Serial.print(" -> ");
+    Serial.println(filename);
+
+    if (FileExists(filename))
+    {
+      DrawImage(file_index);
+    }
+    else
+    {
+      Serial.print("Panorama file missing: ");
+      Serial.println(filename);
+      fillScreen(TFT_BLACK);
+    }
+
+#ifdef CS_DIRECT_GPIO
+    chip_select.update();
+#endif
+  }
+
+  // Do not let the normal clock preload logic reuse the last panorama
+  // panel as though it were a clock digit.
+  InvalidateImageInBuffer();
+
+  Serial.println("Panorama drawn.");
+}
+
 void TFTs::setDigit(uint8_t digit, uint8_t value, show_t show)
 {
   if (TFTsEnabled)
   { // only do this, if the displays are enabled
     uint8_t old_value = digits[digit];
     digits[digit] = value;
+
+    // Keep tracking the current time internally, but do not overwrite
+    // the six-screen artwork while panorama mode is active.
+    if (panorama_mode)
+      return;
 
     if (show != no && (old_value != value || show == force))
     {
@@ -231,6 +354,10 @@ void TFTs::showDigit(uint8_t digit)
 
 void TFTs::LoadNextImage()
 {
+  // Normal clock preloading is unnecessary while panorama artwork is shown.
+  if (panorama_mode)
+    return;
+
   if (NextFileRequired != FileInBuffer)
   {
 #ifdef DEBUG_OUTPUT_IMAGES

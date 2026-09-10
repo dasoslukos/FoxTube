@@ -254,6 +254,11 @@ const String Menu::state_str[Menu::num_states] = {
     "backlight_pattern",
     "pattern_color",
     "backlight_intensity",
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+    "strip_pattern",
+    "strip_color",
+    "strip_intensity",
+#endif
     "twelve_hour",
     "blank_hours_zero",
     "utc_offset_hour",
@@ -265,6 +270,11 @@ const String Menu::state_str[Menu::num_states] = {
     "backlight_pattern",
     "pattern_color",
     "backlight_intensity",
+#ifdef HARDWAREMOD_IPSTUBE_CLOCK_WITH_LED_STRIPE
+    "strip_pattern",
+    "strip_color",
+    "strip_intensity",
+#endif
     "twelve_hour",
     "blank_hours_zero",
     "utc_offset_hour",
