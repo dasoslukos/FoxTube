@@ -31,8 +31,8 @@ __pycache__
 
 # End of https://www.toptal.com/developers/gitignore/api/platformio,visualstudiocode
 
-# Exclude personal settings for the project (wifi credentials, etc.).
-include/_USER_DEFINES.h
+# FoxTube local-only credentials. Never commit this file.
+include/_USER_SECRETS.h
 
 # Ignore "act" files (GitHub Actions locally).
 .act_artifacts

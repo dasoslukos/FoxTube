@@ -1,0 +1,124 @@
+/*
+ * Project: Alternative firmware for EleksTube IPS clock
+ * Hardware: ESP32
+ * File description: User preferences for the complete project
+ * Hardware connections and other deep settings are located in "GLOBAL_DEFINES.h"
+ */
+
+#ifndef USER_DEFINES_H_
+#define USER_DEFINES_H_
+
+// #define DEBUG_OUTPUT        // Uncomment for general Debug printing via serial interface
+// #define DEBUG_OUTPUT_IMAGES // Uncomment for Debug printing of image loading and drawing
+// #define DEBUG_OUTPUT_MQTT   // Uncomment for Debug printing of MQTT messages
+// #define DEBUG_OUTPUT_RTC    // Uncomment for Debug printing of RTC chip initialization and time setting
+// #define DEBUG_OUTPUT_GEO    // Uncomment for Debug printing of Geolocation info
+
+// ************* Clock font file type selection (.clk or .bmp)  *************
+// #define USE_CLK_FILES   // Select between .CLK and .BMP images
+
+// ************* Display Dimming / Night time operation *************
+#define DIMMING                      // Uncomment to enable dimming in the given time period between NIGHT_TIME and DAY_TIME
+#define NIGHT_TIME 0                // Dim displays at 10 pm
+#define DAY_TIME 34                   // Full brightness after 7 am
+#define BACKLIGHT_DIMMED_INTENSITY 3 // 0..7
+#define TFT_DIMMED_INTENSITY 60      // 0..255
+
+// ************* WiFi config *************
+#define WIFI_CONNECT_TIMEOUT_SEC 20                     // Seconds to wait for WiFi connection before timing out, if credentials are present
+#define WIFI_RETRY_CONNECTION_SEC 15                    // Seconds between WiFi reconnect attempts, if connection is lost or not established
+#define WIFI_WPS_CONNECT_TIMEOUT_SEC 120                // Max seconds to wait for WPS before giving up
+//#define WIFI_USE_WPS                                    // Uncomment to use WPS instead of WiFi credentials
+
+// Optional private WiFi credentials.
+//
+// For a local build, copy _USER_SECRETS.example.h to _USER_SECRETS.h and
+// put the real SSID/password there. _USER_SECRETS.h is ignored by Git and
+// must never be committed.
+//
+// When TFT_eSPI compiles its copied configuration header, this optional file
+// may not be in that library directory. That is fine: the TFT library does not
+// need the WiFi credentials, and the safe fallbacks below are used there.
+#if __has_include("_USER_SECRETS.h")
+#include "_USER_SECRETS.h"
+#endif
+
+#ifndef WIFI_SSID
+#define WIFI_SSID "__enter_your_wifi_ssid_here__"
+#endif
+
+#ifndef WIFI_PASSWD
+#define WIFI_PASSWD "__enter_your_wifi_password_here__"
+#endif
+
+//  *************  Geolocation  *************
+// new in V1.3.3 -> Geolocation enabled by default with free provider, to get timezone and DST info
+// Check is done on startup and every sunday at 3am
+#define GEOLOCATION_ENABLED // Enabled by default with IP-API.com as provider -> free usage
+
+// Choose your geolocation provider here:
+#define GEOLOCATION_PROVIDER_IPAPI // default provider - IP-API.com -> no API key needed! free tier has a 45 requests per minute limit!
+// #define GEOLOCATION_PROVIDER_ABSTRACTAPI // alternative provider 1 -> needs an API key! free tier has 1,000 requests AT ALL per account! No reset! Be careful to not exceed this limit!!!
+// #define GEOLOCATION_PROVIDER_IPGEOLOCATION // alternative provider 2 -> needs an API key! free tier has 1,000 requests per month limit!
+
+// enter your API key for the selected geolocation provider here: Leave empty for IP-API.com
+#define GEOLOCATION_API_KEY "__enter_your_api_key_here__"
+
+// ************* NTP config  *************
+#define NTP_SERVER "pool.ntp.org"
+#define NTP_UPDATE_INTERVAL 60000
+
+// ************* MQTT plain mode config *************
+// #define MQTT_PLAIN_ENABLED // Enable MQTT support for an external provider
+
+// MQTT support is limited to what an external service offers (for example SmartNest.cz).
+// You can use MQTT to control the clock via direct MQTT messages from external service or some DIY device.
+// The actual MQTT implementation is "emulating" a temperature sensor, so you can use "set temperature" commands to control the clock from the SmartNest app.
+
+// For plain MQTT support you can either use any internet-based MQTT broker (e.g., smartnest.cz or HiveMQ) or a local one (e.g., Mosquitto).
+// If you choose an internet based one, you will need to create an account, (maybe setting up the device there) and filling in the data below then.
+// If you choose a local one, you will need to set up the broker on your local network and fill in the data below.
+
+#ifdef MQTT_PLAIN_ENABLED
+#define MQTT_BROKER "smartnest.cz"                        // Broker host
+#define MQTT_PORT 1883                                    // Broker port
+#define MQTT_USERNAME "__enter_your_mqtt_username_here__" // Username from Smartnest
+#define MQTT_PASSWORD "__enter_your_mqtt_password_here__" // Password from Smartnest or API key (under MY Account)
+// #define MQTT_CLIENT_ID_FOR_SMARTNEST "__enter_your_device_id_here__"     // Device ID from Smartnest
+#endif
+
+// ************* MQTT HomeAssistant config *************
+// #define MQTT_HOME_ASSISTANT // Uncomment if you want Home Assistant (HA) support
+
+// You will either need a local MQTT broker to use MQTT with Home Assistant (e.g., Mosquitto) or use an internet-based broker with Home Assistant support.
+// If not done already, you can set up a local one easily via an Add-On in HA. See: https://www.home-assistant.io/integrations/mqtt/
+// Enter the credential data into the MQTT broker settings section below accordingly.
+// The device will send auto-discovery messages to Home Assistant via MQTT, so you can use the device in Home Assistant without any custom configuration needed.
+// See https://www.home-assistant.io/integrations/mqtt/#discovery-messages-and-availability for more information.
+// Retained messages can create ghost entities that keep coming back (i.e., if you change MQTT device name)! You need to delete them manually from the broker queue!
+
+// Note that the following ACL may need to be set in Mosquitto in order to let the device access and write the necessary topics:
+//   user <mqtt_username>
+//   topic read homeassistant/status
+//   pattern readwrite elekstubehax/%c/#
+//   pattern readwrite homeassistant/+/%c/#
+
+// --- MQTT broker settings ---
+// Fill in the data according to configuration of your local MQTT broker that is linked to HomeAssistant - for example Mosquitto.
+#ifdef MQTT_HOME_ASSISTANT
+#define MQTT_BROKER "__enter_IP_of_the_mqtt_broker__"     // Broker host
+#define MQTT_PORT 1883                                    // Broker port
+#define MQTT_USERNAME "__enter_your_mqtt_username_here__" // Username
+#define MQTT_PASSWORD "__enter_your_mqtt_password_here__" // Password
+#endif
+
+#define MQTT_SAVE_PREFERENCES_AFTER_SEC 60 // Autosave config X seconds after last MQTT configuration message received
+
+// Uncomment to append short MAC suffix to device name in Home Assistant for disambiguation when multiple identical models exist
+#define ENABLE_HA_DEVICE_NAME_SUFFIX
+
+// #define MQTT_USE_TLS // Use TLS for MQTT connection. Setting a root CA certificate is needed!
+// Don't forget to copy the correct certificate file into the 'data' folder and rename it to mqtt-ca-root.pem!
+// Example CA cert (Let's Encrypt CA cert) can be found in the 'data - other graphics' subfolder in the root of this repo
+
+#endif // USER_DEFINES_H_
