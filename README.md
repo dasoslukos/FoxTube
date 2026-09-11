@@ -7,7 +7,8 @@ six-display clocks.
 It keeps the excellent EleksTubeHAX foundation and adds a FoxTube-specific
 ESP32-S3 hardware port, a local responsive Web UI, custom clock artwork,
 panorama mode, independent RGB lighting controls, configurable display
-brightness scheduling, and an Ambient Weather-powered weather clock mode.
+brightness scheduling, an Ambient Weather-powered weather clock mode, and
+automatic Normal/Weather display cycling.
 
 > **Project status:** FoxTube is a hardware-specific development fork. The
 > features documented here are developed and tested on the ESP32-S3 IPSTube
@@ -82,7 +83,8 @@ The Web UI currently provides control for:
 - leading zero behavior
 - tube RGB pattern, color, and brightness
 - bottom-strip RGB pattern, color, and brightness
-- Normal / Weather / Panorama display modes
+- Normal / Weather / Cycle / Panorama display modes
+- configurable Cycle interval
 - day/night TFT brightness scheduling
 - Ambient Weather station configuration
 - weather refresh interval
@@ -111,6 +113,23 @@ The matching Fox Den-style colon used by Weather Clock mode is:
 
 ---
 
+### 🔄 Cycle mode
+
+Cycle mode automatically alternates between the normal clock display and
+Weather Clock mode.
+
+The switching interval is configurable from **5 to 300 seconds**, with a
+default of **30 seconds**, and can be changed from either the Web UI or the
+one-button menu.
+
+Cycle timing is independent of the Ambient Weather refresh interval. Switching
+to the Weather view uses the most recently cached station data and does not
+trigger a new API request on every display change.
+
+The selected mode and Cycle interval are stored persistently in ESP32 NVS.
+
+---
+
 ### 🖼️ Panorama mode
 
 The six 135×240 displays can be used as one effective **810×240** panoramic
@@ -125,7 +144,7 @@ Panorama assets use:
 A long press of the rear button while the clock is idle toggles Panorama mode.
 
 Panorama acts as an overlay, so leaving Panorama returns to the underlying
-Normal or Weather mode that was selected previously.
+Normal, Weather, or Cycle mode that was selected previously.
 
 ---
 
@@ -192,6 +211,9 @@ If an API request fails, FoxTube keeps the last successful reading rather than
 blanking the display.
 
 The default refresh interval is **5 minutes** and can be changed from the Web UI.
+
+Cycle mode does not alter this refresh interval. It only changes which cached
+display view is currently shown.
 
 ### Ambient Weather requirement
 
@@ -387,7 +409,7 @@ Current FoxTube namespaces include:
 ```text
 foxstrip      bottom RGB strip settings
 foxdisplay    day/night TFT brightness schedule
-foxweather    Ambient Weather configuration and credentials
+foxweather    Ambient Weather, Clock Mode, and Cycle configuration
 ```
 
 This keeps FoxTube-specific persistence isolated from the upstream configuration
@@ -411,6 +433,7 @@ tested IPSTube S3 hardware, including:
 - configurable day/night display brightness
 - Ambient Weather station discovery
 - Weather Clock mode
+- automatic Normal/Weather Cycle mode with configurable interval
 
 Contributions and testing on similar ESP32-S3 IPSTube hardware are welcome.
 
