@@ -17,7 +17,8 @@ public:
   enum mode_t : uint8_t
   {
     normal_mode = 0,
-    weather_mode = 1
+    weather_mode = 1,
+    cycle_mode = 2
   };
 
   static const uint8_t MAX_STATIONS = 6;
@@ -31,12 +32,23 @@ public:
   WeatherClock();
 
   void begin(TFTs *tfts_, Clock *clock_);
-  void loop();
+  bool loop();
 
   mode_t getMode() const { return mode; }
   bool isWeatherMode() const { return mode == weather_mode; }
+  bool isCycleMode() const { return mode == cycle_mode; }
+  bool isShowingWeather() const
+  {
+    return mode == weather_mode || (mode == cycle_mode && cycle_showing_weather);
+  }
+  const char *getModeName() const;
+
   void setMode(mode_t new_mode);
   void toggleMode();
+
+  void setCycleSeconds(uint16_t seconds);
+  void adjustCycleSeconds(int32_t delta_seconds);
+  uint16_t getCycleSeconds() const { return cycle_seconds; }
 
   bool credentialsConfigured() const;
   bool saveCredentials(const String &api_key, const String &application_key);
@@ -73,6 +85,9 @@ private:
   Clock *clock;
 
   mode_t mode;
+  uint16_t cycle_seconds;
+  bool cycle_showing_weather;
+  uint32_t last_cycle_millis;
 
   String api_key;
   String application_key;

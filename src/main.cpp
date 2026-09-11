@@ -700,7 +700,7 @@ void loop()
   uclock.loop();
 
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
-  weather_clock.loop();
+  const bool weather_view_changed = weather_clock.loop();
 
   // FoxTube S3 uses the persistent runtime day/night display schedule.
   display_schedule.loop(uclock.getHour24(), uclock.getMinute());
@@ -708,7 +708,23 @@ void loop()
   checkDimmingNeeded(); // Legacy compile-time night/day dimming for other hardware.
 #endif
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  // A Cycle transition needs a forced redraw because the previous layout used
+  // different physical tubes. Defer that redraw while a menu or Panorama is
+  // covering the clock; the existing menu/Panorama exit path redraws it later.
+  if (weather_view_changed &&
+      menu.getState() == Menu::idle &&
+      !tfts.isPanoramaMode())
+  {
+    updateClockDisplay(TFTs::force);
+  }
+  else
+  {
+    updateClockDisplay();
+  }
+#else
   updateClockDisplay(); // Draw only the changed clock digits!
+#endif
 
 #ifdef GEOLOCATION_ENABLED
   checkUpdateGeoLocNeeded(); // Check if it is time to update geolocation based timezone offset (just once per day)
@@ -820,7 +836,7 @@ void loop()
       }
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
-      // Normal clock vs HH:MM + weather display mode
+      // Normal, HH:MM + weather, or automatic Normal/Weather cycling.
       else if (menu_state == Menu::weather_clock_mode)
       {
         if (menu_change != 0)
@@ -829,7 +845,19 @@ void loop()
         }
         setupMenu();
         tfts.println("Clock mode:");
-        tfts.println(weather_clock.isWeatherMode() ? "Weather" : "Normal");
+        tfts.println(weather_clock.getModeName());
+      }
+      // Seconds between Normal and Weather while Cycle mode is selected.
+      else if (menu_state == Menu::weather_cycle_interval)
+      {
+        if (menu_change != 0)
+        {
+          weather_clock.adjustCycleSeconds(menu_change * 5);
+        }
+        setupMenu();
+        tfts.println("Cycle every:");
+        tfts.print(weather_clock.getCycleSeconds());
+        tfts.println(" sec");
       }
       // Automatic Day/Night Display Brightness
       else if (menu_state == Menu::display_schedule)
@@ -1377,7 +1405,7 @@ void processGeoLocUpdate()
 void updateClockDisplay(TFTs::show_t show)
 {
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
-  if (weather_clock.isWeatherMode())
+  if (weather_clock.isShowingWeather())
   {
     // Keep menu text stable while the one-button menu is open. A forced
     // redraw on menu exit restores the HH:MM + weather layout.

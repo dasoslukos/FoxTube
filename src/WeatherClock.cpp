@@ -16,6 +16,11 @@ constexpr const char *AMBIENT_HOST = "https://api.ambientweather.net/v1/devices"
 constexpr uint16_t DEFAULT_REFRESH_MINUTES = 5;
 constexpr uint16_t MIN_REFRESH_MINUTES = 1;
 constexpr uint16_t MAX_REFRESH_MINUTES = 60;
+
+constexpr uint16_t DEFAULT_CYCLE_SECONDS = 30;
+constexpr uint16_t MIN_CYCLE_SECONDS = 5;
+constexpr uint16_t MAX_CYCLE_SECONDS = 300;
+
 constexpr uint32_t FETCH_RETRY_AFTER_FAILURE_MS = 60UL * 1000UL;
 constexpr uint32_t STALE_AFTER_SECONDS = 30UL * 60UL;
 constexpr uint32_t HTTP_TIMEOUT_MS = 12000UL;
@@ -25,6 +30,8 @@ WeatherClock weather_clock;
 
 WeatherClock::WeatherClock()
     : prefs(), tfts(nullptr), clock(nullptr), mode(normal_mode),
+      cycle_seconds(DEFAULT_CYCLE_SECONDS), cycle_showing_weather(false),
+      last_cycle_millis(0),
       refresh_minutes(DEFAULT_REFRESH_MINUTES), refresh_requested(true),
       last_attempt_millis(0), last_success_millis(0), reading_valid(false),
       temp_f(0.0f), humidity(0.0f), wind_mph(0.0f), daily_rain_in(0.0f),
@@ -41,8 +48,12 @@ void WeatherClock::begin(TFTs *tfts_, Clock *clock_)
   prefs.begin("foxweather", false);
   loadConfig();
 
+  // Cycle mode always starts on the normal clock after boot.
+  cycle_showing_weather = false;
+  last_cycle_millis = millis();
+
   if (tfts != nullptr)
-    tfts->setWeatherMode(mode == weather_mode);
+    tfts->setWeatherMode(isShowingWeather());
 
   refresh_requested = true;
 
@@ -60,8 +71,16 @@ void WeatherClock::loadConfig()
   uint16_t stored_refresh = prefs.getUShort("refresh", DEFAULT_REFRESH_MINUTES);
   refresh_minutes = constrain(stored_refresh, MIN_REFRESH_MINUTES, MAX_REFRESH_MINUTES);
 
+  uint16_t stored_cycle = prefs.getUShort("cycleSec", DEFAULT_CYCLE_SECONDS);
+  cycle_seconds = constrain(stored_cycle, MIN_CYCLE_SECONDS, MAX_CYCLE_SECONDS);
+
   uint8_t stored_mode = prefs.getUChar("mode", uint8_t(normal_mode));
-  mode = stored_mode == uint8_t(weather_mode) ? weather_mode : normal_mode;
+  if (stored_mode <= uint8_t(cycle_mode))
+    mode = mode_t(stored_mode);
+  else
+    mode = normal_mode;
+
+  cycle_showing_weather = false;
 }
 
 void WeatherClock::saveConfig()
@@ -69,6 +88,7 @@ void WeatherClock::saveConfig()
   prefs.putString("station", station_mac);
   prefs.putString("stationName", selected_station_name);
   prefs.putUShort("refresh", refresh_minutes);
+  prefs.putUShort("cycleSec", cycle_seconds);
   prefs.putUChar("mode", uint8_t(mode));
 }
 
@@ -131,29 +151,86 @@ void WeatherClock::clearCredentials()
 
 void WeatherClock::setMode(mode_t new_mode)
 {
-  if (new_mode != normal_mode && new_mode != weather_mode)
+  if (new_mode != normal_mode &&
+      new_mode != weather_mode &&
+      new_mode != cycle_mode)
+  {
     new_mode = normal_mode;
+  }
 
   mode = new_mode;
+
+  // Cycle is a configured mode, while the actual visible sub-view alternates
+  // between normal and weather. Start every new Cycle session on Normal.
+  cycle_showing_weather = false;
+  last_cycle_millis = millis();
+
   prefs.putUChar("mode", uint8_t(mode));
 
   if (tfts != nullptr)
-    tfts->setWeatherMode(mode == weather_mode);
+    tfts->setWeatherMode(isShowingWeather());
 
   last_render_hour = 255;
   last_render_minute = 255;
   rendered_generation = UINT32_MAX;
 
-  if (mode == weather_mode)
-  {
+  // Prime the weather cache once when Weather or Cycle is selected. The
+  // normal Ambient refresh timer remains completely independent of Cycle.
+  if (mode == weather_mode || mode == cycle_mode)
     requestRefresh();
-    render(true);
+}
+
+const char *WeatherClock::getModeName() const
+{
+  switch (mode)
+  {
+  case weather_mode:
+    return "weather";
+  case cycle_mode:
+    return "cycle";
+  case normal_mode:
+  default:
+    return "normal";
   }
 }
 
 void WeatherClock::toggleMode()
 {
-  setMode(isWeatherMode() ? normal_mode : weather_mode);
+  switch (mode)
+  {
+  case normal_mode:
+    setMode(weather_mode);
+    break;
+  case weather_mode:
+    setMode(cycle_mode);
+    break;
+  case cycle_mode:
+  default:
+    setMode(normal_mode);
+    break;
+  }
+}
+
+void WeatherClock::setCycleSeconds(uint16_t seconds)
+{
+  cycle_seconds = constrain(seconds, MIN_CYCLE_SECONDS, MAX_CYCLE_SECONDS);
+  prefs.putUShort("cycleSec", cycle_seconds);
+
+  // Give the newly selected interval a fresh full period.
+  last_cycle_millis = millis();
+}
+
+void WeatherClock::adjustCycleSeconds(int32_t delta_seconds)
+{
+  int32_t next = int32_t(cycle_seconds) + delta_seconds;
+
+  // The one-button S3 menu can only increment values, so wrap at the ends.
+  if (next > int32_t(MAX_CYCLE_SECONDS))
+    next = MIN_CYCLE_SECONDS;
+  else if (next < int32_t(MIN_CYCLE_SECONDS))
+    next = MAX_CYCLE_SECONDS;
+
+  setCycleSeconds(uint16_t(next));
 }
 
 void WeatherClock::setRefreshMinutes(uint16_t minutes)
@@ -454,12 +531,35 @@ bool WeatherClock::isStale() const
   return reading_valid && getLastSuccessAgeSeconds() > STALE_AFTER_SECONDS;
 }
 
-void WeatherClock::loop()
+bool WeatherClock::loop()
 {
-  if (!credentialsConfigured() || WiFi.status() != WL_CONNECTED)
-    return;
-
   const uint32_t now = millis();
+  bool view_changed = false;
+
+  // Cycle only changes which cached view is visible. It does NOT trigger an
+  // Ambient Weather request, so a 30-second display cycle can happily coexist
+  // with (for example) a 5-minute weather refresh interval.
+  if (mode == cycle_mode)
+  {
+    const uint32_t cycle_ms = uint32_t(cycle_seconds) * 1000UL;
+    if ((now - last_cycle_millis) >= cycle_ms)
+    {
+      cycle_showing_weather = !cycle_showing_weather;
+      last_cycle_millis = now;
+
+      if (tfts != nullptr)
+        tfts->setWeatherMode(cycle_showing_weather);
+
+      last_render_hour = 255;
+      last_render_minute = 255;
+      rendered_generation = UINT32_MAX;
+      view_changed = true;
+    }
+  }
+
+  if (!credentialsConfigured() || WiFi.status() != WL_CONNECTED)
+    return view_changed;
+
   const uint32_t refresh_ms = uint32_t(refresh_minutes) * 60UL * 1000UL;
 
   bool due = refresh_requested;
@@ -472,11 +572,13 @@ void WeatherClock::loop()
 
   if (due)
     fetchNow();
+
+  return view_changed;
 }
 
 void WeatherClock::render(bool force)
 {
-  if (!isWeatherMode() || tfts == nullptr || clock == nullptr)
+  if (!isShowingWeather() || tfts == nullptr || clock == nullptr)
     return;
 
   if (!tfts->isEnabled() || tfts->isPanoramaMode())

@@ -24,7 +24,7 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 <style>
 :root{color-scheme:dark;--bg:#09070f;--card:#151020;--text:#f7eefc;--muted:#aa9bb8;--orange:#ff8a36;--purple:#9f68ff;--blue:#5aa7ff;--green:#44d79d;--red:#ff5f78;--line:#30253f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#25133a 0,transparent 34%),radial-gradient(circle at 80% 10%,#132649 0,transparent 28%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh}
-.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.accent-green{border-top:2px solid var(--green)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],input[type=password],button{width:100%}select,input[type=time],input[type=password],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.modebuttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.modebuttons button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;background:#221126}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.danger{border-color:#783040;color:#ffb6c2}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.wxstatus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:min(420px,calc(100% - 36px))}.toast.show{opacity:1;transform:none}.toast.bad{border-color:var(--red);color:#ffd6dc}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}.good{color:var(--green)}.badtext{color:#ff8798}.credentials{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.accent-green{border-top:2px solid var(--green)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],input[type=password],button{width:100%}select,input[type=time],input[type=password],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.modebuttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.modebuttons button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;background:#221126}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.danger{border-color:#783040;color:#ffb6c2}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.wxstatus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:min(420px,calc(100% - 36px))}.toast.show{opacity:1;transform:none}.toast.bad{border-color:var(--red);color:#ffd6dc}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}.good{color:var(--green)}.badtext{color:#ff8798}.credentials{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{grid-template-columns:110px 1fr auto}.status,.wxstatus{grid-template-columns:repeat(2,1fr)}.credentials{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.modebuttons{grid-template-columns:1fr}}
 </style>
 </head>
@@ -59,9 +59,16 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
       <div class="modebuttons">
         <button id="modeNormal">Normal</button>
         <button id="modeWeather">Weather</button>
+        <button id="modeCycle">Cycle</button>
         <button id="modePanorama">Panorama</button>
       </div>
-      <div class="hint">Weather mode displays <b>HH : MM</b> with live FoxyDen weather on the right-most tube. Panorama still uses 100.bmp–105.bmp.</div>
+      <div class="row">
+        <div class="label">Cycle interval</div>
+        <input id="cycleSeconds" type="range" min="5" max="300" step="5">
+        <div class="value" id="cycleSecondsValue">30 sec</div>
+      </div>
+      <div class="hint" id="cycleView">Cycle alternates Normal and Weather without changing the Ambient Weather refresh interval.</div>
+      <div class="hint">Weather mode displays <b>HH : MM</b> with live Ambient Weather on the right-most tube. Panorama still uses 100.bmp–105.bmp.</div>
     </section>
 
     <section class="card wide accent-green">
@@ -142,9 +149,11 @@ if(s.strip){$('stripPattern').value=s.strip.pattern;$('stripColor').value=s.stri
 $('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');$('face').value=s.clock.face;
 active('h12',s.clock.twelveHour);active('h24',!s.clock.twelveHour);active('zeroOn',!s.clock.blankZero);active('zeroOff',s.clock.blankZero);
 if(s.display){active('displayAutoOn',s.display.enabled);active('displayAutoOff',!s.display.enabled);$('dayStart').value=s.display.dayStart;$('nightStart').value=s.display.nightStart;$('dayBrightness').value=s.display.dayBrightness;$('nightBrightness').value=s.display.nightBrightness;$('dayBrightnessValue').textContent=s.display.dayBrightness+'/255';$('nightBrightnessValue').textContent=s.display.nightBrightness+'/255';const dm=$('displayMode');dm.textContent=(s.display.isNight?'Night':'Day')+' · '+s.display.appliedBrightness;dm.classList.toggle('night',s.display.isNight);dm.classList.toggle('day',!s.display.isNight)}
-const mode=s.panorama?'panorama':(s.weather&&s.weather.mode?'weather':'normal');active('modeNormal',mode==='normal');active('modeWeather',mode==='weather');active('modePanorama',mode==='panorama');
+const mode=s.panorama?'panorama':((s.weather&&s.weather.mode)||'normal');active('modeNormal',mode==='normal');active('modeWeather',mode==='weather');active('modeCycle',mode==='cycle');active('modePanorama',mode==='panorama');
 if(s.weather){
   const c=$('weatherConfigured');c.textContent=s.weather.configured?'✓ Ambient Weather configured':'Ambient Weather credentials are not configured.';c.classList.toggle('good',s.weather.configured);c.classList.toggle('badtext',!s.weather.configured);
+  $('cycleSeconds').value=String(s.weather.cycleSeconds);$('cycleSecondsValue').textContent=s.weather.cycleSeconds+' sec';
+  const cv=$('cycleView');if(s.weather.mode==='cycle'){cv.textContent=(s.panorama?'Cycle is underneath Panorama · ':'Cycle active · ')+(s.weather.showingWeather?'currently Weather':'currently Normal')}else{cv.textContent='Cycle alternates Normal and Weather without changing the Ambient Weather refresh interval.'}
   $('weatherRefresh').value=String(s.weather.refreshMinutes);
   const st=$('weatherStation');
   if(s.weather.stations&&s.weather.stations.length){st.innerHTML=s.weather.stations.map(x=>`<option value="${x.mac}">${x.name}</option>`).join('');st.value=s.weather.stationMac||s.weather.stations[0].mac;st.disabled=false}else{st.innerHTML='<option value="">Test connection to load stations</option>';st.disabled=true}
@@ -156,7 +165,7 @@ async function loadState(){try{const r=await fetch('/api/state',{cache:'no-store
 $('tubePattern').onchange=e=>post('/api/tube',{pattern:e.target.value});$('tubeColor').onchange=e=>post('/api/tube',{color:e.target.value});$('tubeIntensity').oninput=e=>$('tubeIntensityValue').textContent=e.target.value+'/7';$('tubeIntensity').onchange=e=>post('/api/tube',{intensity:e.target.value});
 $('stripPattern').onchange=e=>post('/api/strip',{pattern:e.target.value});$('stripColor').onchange=e=>post('/api/strip',{color:e.target.value});$('stripIntensity').oninput=e=>$('stripIntensityValue').textContent=e.target.value+'/7';$('stripIntensity').onchange=e=>post('/api/strip',{intensity:e.target.value});
 $('face').onchange=e=>post('/api/clock',{face:e.target.value});$('h12').onclick=()=>post('/api/clock',{twelve:'1'});$('h24').onclick=()=>post('/api/clock',{twelve:'0'});$('zeroOn').onclick=()=>post('/api/clock',{blank:'0'});$('zeroOff').onclick=()=>post('/api/clock',{blank:'1'});
-$('modeNormal').onclick=()=>post('/api/mode',{mode:'normal'});$('modeWeather').onclick=()=>post('/api/mode',{mode:'weather'});$('modePanorama').onclick=()=>post('/api/mode',{mode:'panorama'});
+$('modeNormal').onclick=()=>post('/api/mode',{mode:'normal'});$('modeWeather').onclick=()=>post('/api/mode',{mode:'weather'});$('modeCycle').onclick=()=>post('/api/mode',{mode:'cycle'});$('modePanorama').onclick=()=>post('/api/mode',{mode:'panorama'});$('cycleSeconds').oninput=e=>$('cycleSecondsValue').textContent=e.target.value+' sec';$('cycleSeconds').onchange=e=>post('/api/mode',{cycleSeconds:e.target.value});
 $('weatherSave').onclick=async()=>{const api=$('weatherApiKey').value.trim(),app=$('weatherAppKey').value.trim();if(!api||!app){showToast('Enter both Ambient Weather keys',true);return}await post('/api/weather/credentials',{apiKey:api,applicationKey:app});$('weatherApiKey').value='';$('weatherAppKey').value=''};
 $('weatherTest').onclick=async()=>{try{await post('/api/weather/test',{},true);showToast('Weather connection works 🦊')}catch(e){}};
 $('weatherClear').onclick=()=>{if(confirm('Clear Ambient Weather credentials from FoxTube?'))post('/api/weather/clear')};
@@ -294,7 +303,7 @@ bool WebUI::parseTimeMinutes(const String &value, uint16_t &minutes)
 void WebUI::handleState()
 {
   String json;
-  json.reserve(1800);
+  json.reserve(1900);
 
   json += "{\"tube\":{";
   json += "\"pattern\":";
@@ -360,8 +369,12 @@ void WebUI::handleState()
   json += "\"weather\":{";
   json += "\"configured\":";
   json += weather_clock->credentialsConfigured() ? "true" : "false";
-  json += ",\"mode\":";
-  json += weather_clock->isWeatherMode() ? "true" : "false";
+  json += ",\"mode\":\"";
+  json += weather_clock->getModeName();
+  json += "\",\"showingWeather\":";
+  json += weather_clock->isShowingWeather() ? "true" : "false";
+  json += ",\"cycleSeconds\":";
+  json += String(weather_clock->getCycleSeconds());
   json += ",\"refreshMinutes\":";
   json += String(weather_clock->getRefreshMinutes());
   json += ",\"stationMac\":\"";
@@ -509,7 +522,7 @@ void WebUI::redrawClock()
   if (!tfts->isEnabled() || tfts->isPanoramaMode())
     return;
 
-  if (weather_clock != nullptr && weather_clock->isWeatherMode())
+  if (weather_clock != nullptr && weather_clock->isShowingWeather())
   {
     weather_clock->render(true);
     return;
@@ -594,39 +607,60 @@ void WebUI::handleDisplay()
 
 void WebUI::handleMode()
 {
-  if (!server.hasArg("mode"))
+  bool changed = false;
+
+  if (server.hasArg("cycleSeconds"))
   {
-    server.send(400, "text/plain", "Missing display mode.");
-    return;
+    const int seconds = constrain(server.arg("cycleSeconds").toInt(), 5, 300);
+    weather_clock->setCycleSeconds(uint16_t(seconds));
+    changed = true;
   }
 
-  const String requested = server.arg("mode");
+  if (server.hasArg("mode"))
+  {
+    const String requested = server.arg("mode");
 
-  if (requested == "panorama")
-  {
-    if (!tfts->isPanoramaMode())
-      tfts->enablePanorama(100);
-  }
-  else if (requested == "weather")
-  {
-    if (tfts->isPanoramaMode())
-      tfts->disablePanorama();
+    if (requested == "panorama")
+    {
+      if (!tfts->isPanoramaMode())
+        tfts->enablePanorama(100);
+    }
+    else if (requested == "weather")
+    {
+      if (tfts->isPanoramaMode())
+        tfts->disablePanorama();
 
-    weather_clock->setMode(WeatherClock::weather_mode);
-    weather_clock->requestRefresh();
-    weather_clock->render(true);
-  }
-  else if (requested == "normal")
-  {
-    if (tfts->isPanoramaMode())
-      tfts->disablePanorama();
+      weather_clock->setMode(WeatherClock::weather_mode);
+      weather_clock->render(true);
+    }
+    else if (requested == "cycle")
+    {
+      if (tfts->isPanoramaMode())
+        tfts->disablePanorama();
 
-    weather_clock->setMode(WeatherClock::normal_mode);
-    redrawClock();
+      weather_clock->setMode(WeatherClock::cycle_mode);
+      redrawClock(); // Cycle always begins with a full Normal view.
+    }
+    else if (requested == "normal")
+    {
+      if (tfts->isPanoramaMode())
+        tfts->disablePanorama();
+
+      weather_clock->setMode(WeatherClock::normal_mode);
+      redrawClock();
+    }
+    else
+    {
+      server.send(400, "text/plain", "Unknown display mode.");
+      return;
+    }
+
+    changed = true;
   }
-  else
+
+  if (!changed)
   {
-    server.send(400, "text/plain", "Unknown display mode.");
+    server.send(400, "text/plain", "Missing display mode or cycle interval.");
     return;
   }
 

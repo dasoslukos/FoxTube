@@ -261,6 +261,7 @@ const String Menu::state_str[Menu::num_states] = {
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
     "weather_clock_mode",
+    "weather_cycle_interval",
     "display_schedule",
     "display_day_start",
     "display_day_brightness",
@@ -285,6 +286,7 @@ const String Menu::state_str[Menu::num_states] = {
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
     "weather_clock_mode",
+    "weather_cycle_interval",
     "display_schedule",
     "display_day_start",
     "display_day_brightness",
