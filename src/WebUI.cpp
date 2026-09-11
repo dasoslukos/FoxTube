@@ -12,6 +12,7 @@
 #include "DisplaySchedule.h"
 #include "StoredConfig.h"
 #include "TFTs.h"
+#include "WeatherClock.h"
 
 static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 <!doctype html>
@@ -21,10 +22,10 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FoxTube</title>
 <style>
-:root{color-scheme:dark;--bg:#09070f;--card:#151020;--card2:#1b1428;--text:#f7eefc;--muted:#aa9bb8;--orange:#ff8a36;--purple:#9f68ff;--blue:#5aa7ff;--line:#30253f}
+:root{color-scheme:dark;--bg:#09070f;--card:#151020;--text:#f7eefc;--muted:#aa9bb8;--orange:#ff8a36;--purple:#9f68ff;--blue:#5aa7ff;--green:#44d79d;--red:#ff5f78;--line:#30253f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#25133a 0,transparent 34%),radial-gradient(circle at 80% 10%,#132649 0,transparent 28%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh}
-.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],button{width:100%}select,input[type=time],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.big.off{background:#17111f;border:1px solid #453655}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}
-@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{grid-template-columns:110px 1fr auto}.status{grid-template-columns:repeat(2,1fr)}}
+.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.accent-green{border-top:2px solid var(--green)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],input[type=password],button{width:100%}select,input[type=time],input[type=password],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.modebuttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.modebuttons button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;background:#221126}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.danger{border-color:#783040;color:#ffb6c2}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.wxstatus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:min(420px,calc(100% - 36px))}.toast.show{opacity:1;transform:none}.toast.bad{border-color:var(--red);color:#ffd6dc}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}.good{color:var(--green)}.badtext{color:#ff8798}.credentials{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{grid-template-columns:110px 1fr auto}.status,.wxstatus{grid-template-columns:repeat(2,1fr)}.credentials{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.modebuttons{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -53,6 +54,57 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
       <div class="row"><div class="label">Leading zero</div><div class="toggle"><button id="zeroOn">Show</button><button id="zeroOff">Blank</button></div><span></span></div>
     </section>
 
+    <section class="card accent-orange">
+      <h2>Clock Mode</h2>
+      <div class="modebuttons">
+        <button id="modeNormal">Normal</button>
+        <button id="modeWeather">Weather</button>
+        <button id="modePanorama">Panorama</button>
+      </div>
+      <div class="hint">Weather mode displays <b>HH : MM</b> with live FoxyDen weather on the right-most tube. Panorama still uses 100.bmp–105.bmp.</div>
+    </section>
+
+    <section class="card wide accent-green">
+      <h2>Weather Station</h2>
+      <div id="weatherConfigured" class="hint">Ambient Weather credentials are not configured.</div>
+
+      <div class="credentials">
+        <div>
+          <div class="label">API Key</div>
+          <input id="weatherApiKey" type="password" autocomplete="off" placeholder="Enter Ambient API key">
+        </div>
+        <div>
+          <div class="label">Application Key</div>
+          <input id="weatherAppKey" type="password" autocomplete="off" placeholder="Enter Ambient application key">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="big" id="weatherSave">Save Credentials</button>
+        <button id="weatherTest">Test Connection</button>
+        <button class="danger" id="weatherClear">Clear Credentials</button>
+      </div>
+
+      <div class="row"><div class="label">Station</div><select id="weatherStation"></select><span></span></div>
+      <div class="row"><div class="label">Refresh</div><select id="weatherRefresh">
+        <option value="1">1 minute</option>
+        <option value="5">5 minutes</option>
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="60">60 minutes</option>
+      </select><span></span></div>
+
+      <div class="wxstatus">
+        <div class="pill"><b>Temperature</b><span id="wxTemp">—</span></div>
+        <div class="pill"><b>Humidity</b><span id="wxHumidity">—</span></div>
+        <div class="pill"><b>Wind</b><span id="wxWind">—</span></div>
+        <div class="pill"><b>Rain today</b><span id="wxRain">—</span></div>
+      </div>
+      <div class="hint" id="weatherAge">No weather reading yet.</div>
+      <div class="hint">Credentials are stored only in ESP32 NVS and are never returned by this page after saving.</div>
+    </section>
+
     <section class="card wide accent-blue">
       <h2>Display Day / Night</h2>
       <div class="row"><div class="label">Auto schedule</div><div class="toggle"><button id="displayAutoOn">On</button><button id="displayAutoOff">Off</button></div><span class="mode" id="displayMode">—</span></div>
@@ -61,12 +113,6 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
       <div class="row"><div class="label">Night starts</div><input id="nightStart" type="time" step="60"><span></span></div>
       <div class="row"><div class="label">Night brightness</div><input id="nightBrightness" type="range" min="0" max="255" step="1"><div class="value" id="nightBrightnessValue"></div></div>
       <div class="hint">Controls the six TFT screens only. Tube LEDs and the bottom strip keep their own independent brightness settings.</div>
-    </section>
-
-    <section class="card accent-purple">
-      <h2>Panorama</h2>
-      <button class="big" id="panorama">Show Fox Panorama</button>
-      <div class="hint">Uses panorama files 100.bmp–105.bmp. The physical long-press toggle still works too.</div>
     </section>
 
     <section class="card wide">
@@ -82,67 +128,40 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 </div>
 <div class="toast" id="toast">Saved ✨</div>
 <script>
-const $=id=>document.getElementById(id), patterns=['Dark','Test','Constant','Rainbow','Pulse','Breath'];
-let state={};
+const $=id=>document.getElementById(id),patterns=['Dark','Test','Constant','Rainbow','Pulse','Breath'];let state={};
 function fillPatterns(el){el.innerHTML=patterns.map((p,i)=>`<option value="${i}">${p}</option>`).join('')}
 fillPatterns($('tubePattern'));fillPatterns($('stripPattern'));
-async function post(url,data){const body=new URLSearchParams(data);const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});if(!r.ok)throw new Error(await r.text());showToast();await loadState()}
-function showToast(){const t=$('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),900)}
+function showToast(msg='Saved ✨',bad=false){const t=$('toast');t.textContent=msg;t.classList.toggle('bad',bad);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400)}
+async function post(url,data={},quiet=false){const body=new URLSearchParams(data);const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});if(!r.ok){const msg=await r.text();showToast(msg||'Request failed',true);throw new Error(msg)}if(!quiet)showToast();await loadState();return r}
 function active(id,on){$(id).classList.toggle('active',!!on)}
+function num(v,d=1){return Number(v).toFixed(d)}
 function apply(s){
 state=s;
-$('tubePattern').value=s.tube.pattern;
-$('tubeColor').value=s.tube.color;
-$('tubeIntensity').value=s.tube.intensity;
-$('tubeIntensityValue').textContent=s.tube.intensity+'/7';
-if(s.strip){
-  $('stripPattern').value=s.strip.pattern;
-  $('stripColor').value=s.strip.color;
-  $('stripIntensity').value=s.strip.intensity;
-  $('stripIntensityValue').textContent=s.strip.intensity+'/7'
-}else{
-  $('stripCard').style.display='none'
+$('tubePattern').value=s.tube.pattern;$('tubeColor').value=s.tube.color;$('tubeIntensity').value=s.tube.intensity;$('tubeIntensityValue').textContent=s.tube.intensity+'/7';
+if(s.strip){$('stripPattern').value=s.strip.pattern;$('stripColor').value=s.strip.color;$('stripIntensity').value=s.strip.intensity;$('stripIntensityValue').textContent=s.strip.intensity+'/7'}else{$('stripCard').style.display='none'}
+$('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');$('face').value=s.clock.face;
+active('h12',s.clock.twelveHour);active('h24',!s.clock.twelveHour);active('zeroOn',!s.clock.blankZero);active('zeroOff',s.clock.blankZero);
+if(s.display){active('displayAutoOn',s.display.enabled);active('displayAutoOff',!s.display.enabled);$('dayStart').value=s.display.dayStart;$('nightStart').value=s.display.nightStart;$('dayBrightness').value=s.display.dayBrightness;$('nightBrightness').value=s.display.nightBrightness;$('dayBrightnessValue').textContent=s.display.dayBrightness+'/255';$('nightBrightnessValue').textContent=s.display.nightBrightness+'/255';const dm=$('displayMode');dm.textContent=(s.display.isNight?'Night':'Day')+' · '+s.display.appliedBrightness;dm.classList.toggle('night',s.display.isNight);dm.classList.toggle('day',!s.display.isNight)}
+const mode=s.panorama?'panorama':(s.weather&&s.weather.mode?'weather':'normal');active('modeNormal',mode==='normal');active('modeWeather',mode==='weather');active('modePanorama',mode==='panorama');
+if(s.weather){
+  const c=$('weatherConfigured');c.textContent=s.weather.configured?'✓ Ambient Weather configured':'Ambient Weather credentials are not configured.';c.classList.toggle('good',s.weather.configured);c.classList.toggle('badtext',!s.weather.configured);
+  $('weatherRefresh').value=String(s.weather.refreshMinutes);
+  const st=$('weatherStation');
+  if(s.weather.stations&&s.weather.stations.length){st.innerHTML=s.weather.stations.map(x=>`<option value="${x.mac}">${x.name}</option>`).join('');st.value=s.weather.stationMac||s.weather.stations[0].mac;st.disabled=false}else{st.innerHTML='<option value="">Test connection to load stations</option>';st.disabled=true}
+  if(s.weather.hasData){$('wxTemp').textContent=num(s.weather.tempF,1)+'°F';$('wxHumidity').textContent=num(s.weather.humidity,0)+'%';$('wxWind').textContent=num(s.weather.windMph,1)+' mph';$('wxRain').textContent=num(s.weather.dailyRainIn,2)+' in';$('weatherAge').textContent=(s.weather.stale?'STALE · ':'')+(s.weather.ageSeconds<60?'updated just now':'updated '+Math.floor(s.weather.ageSeconds/60)+' min ago')+(s.weather.stationName?' · '+s.weather.stationName:'')}else{$('wxTemp').textContent=$('wxHumidity').textContent=$('wxWind').textContent=$('wxRain').textContent='—';$('weatherAge').textContent=s.weather.lastError||'No weather reading yet.'}
 }
-$('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');
-$('face').value=s.clock.face;
-active('h12',s.clock.twelveHour);
-active('h24',!s.clock.twelveHour);
-active('zeroOn',!s.clock.blankZero);
-active('zeroOff',s.clock.blankZero);
-if(s.display){
-  active('displayAutoOn',s.display.enabled);
-  active('displayAutoOff',!s.display.enabled);
-  $('dayStart').value=s.display.dayStart;
-  $('nightStart').value=s.display.nightStart;
-  $('dayBrightness').value=s.display.dayBrightness;
-  $('nightBrightness').value=s.display.nightBrightness;
-  $('dayBrightnessValue').textContent=s.display.dayBrightness+'/255';
-  $('nightBrightnessValue').textContent=s.display.nightBrightness+'/255';
-  const dm=$('displayMode');
-  dm.textContent=(s.display.isNight?'Night':'Day')+' · '+s.display.appliedBrightness;
-  dm.classList.toggle('night',s.display.isNight);
-  dm.classList.toggle('day',!s.display.isNight);
-}
-const p=$('panorama');
-p.textContent=s.panorama?'Return to Clock':'Show Fox Panorama';
-p.classList.toggle('off',s.panorama);
-$('ip').textContent=s.device.ip;
-$('rssi').textContent=s.device.rssi+' dBm';
-$('version').textContent=s.device.version
+$('ip').textContent=s.device.ip;$('rssi').textContent=s.device.rssi+' dBm';$('version').textContent=s.device.version
 }
 async function loadState(){try{const r=await fetch('/api/state',{cache:'no-store'});if(r.ok)apply(await r.json())}catch(e){console.log(e)}}
 $('tubePattern').onchange=e=>post('/api/tube',{pattern:e.target.value});$('tubeColor').onchange=e=>post('/api/tube',{color:e.target.value});$('tubeIntensity').oninput=e=>$('tubeIntensityValue').textContent=e.target.value+'/7';$('tubeIntensity').onchange=e=>post('/api/tube',{intensity:e.target.value});
 $('stripPattern').onchange=e=>post('/api/strip',{pattern:e.target.value});$('stripColor').onchange=e=>post('/api/strip',{color:e.target.value});$('stripIntensity').oninput=e=>$('stripIntensityValue').textContent=e.target.value+'/7';$('stripIntensity').onchange=e=>post('/api/strip',{intensity:e.target.value});
 $('face').onchange=e=>post('/api/clock',{face:e.target.value});$('h12').onclick=()=>post('/api/clock',{twelve:'1'});$('h24').onclick=()=>post('/api/clock',{twelve:'0'});$('zeroOn').onclick=()=>post('/api/clock',{blank:'0'});$('zeroOff').onclick=()=>post('/api/clock',{blank:'1'});
-$('displayAutoOn').onclick=()=>post('/api/display',{enabled:'1'});
-$('displayAutoOff').onclick=()=>post('/api/display',{enabled:'0'});
-$('dayStart').onchange=e=>post('/api/display',{dayStart:e.target.value});
-$('nightStart').onchange=e=>post('/api/display',{nightStart:e.target.value});
-$('dayBrightness').oninput=e=>$('dayBrightnessValue').textContent=e.target.value+'/255';
-$('dayBrightness').onchange=e=>post('/api/display',{dayBrightness:e.target.value});
-$('nightBrightness').oninput=e=>$('nightBrightnessValue').textContent=e.target.value+'/255';
-$('nightBrightness').onchange=e=>post('/api/display',{nightBrightness:e.target.value});
-$('panorama').onclick=()=>post('/api/panorama',{enabled:state.panorama?'0':'1'});
+$('modeNormal').onclick=()=>post('/api/mode',{mode:'normal'});$('modeWeather').onclick=()=>post('/api/mode',{mode:'weather'});$('modePanorama').onclick=()=>post('/api/mode',{mode:'panorama'});
+$('weatherSave').onclick=async()=>{const api=$('weatherApiKey').value.trim(),app=$('weatherAppKey').value.trim();if(!api||!app){showToast('Enter both Ambient Weather keys',true);return}await post('/api/weather/credentials',{apiKey:api,applicationKey:app});$('weatherApiKey').value='';$('weatherAppKey').value=''};
+$('weatherTest').onclick=async()=>{try{await post('/api/weather/test',{},true);showToast('Weather connection works 🦊')}catch(e){}};
+$('weatherClear').onclick=()=>{if(confirm('Clear Ambient Weather credentials from FoxTube?'))post('/api/weather/clear')};
+$('weatherStation').onchange=e=>post('/api/weather/config',{station:e.target.value});$('weatherRefresh').onchange=e=>post('/api/weather/config',{refresh:e.target.value});
+$('displayAutoOn').onclick=()=>post('/api/display',{enabled:'1'});$('displayAutoOff').onclick=()=>post('/api/display',{enabled:'0'});$('dayStart').onchange=e=>post('/api/display',{dayStart:e.target.value});$('nightStart').onchange=e=>post('/api/display',{nightStart:e.target.value});$('dayBrightness').oninput=e=>$('dayBrightnessValue').textContent=e.target.value+'/255';$('dayBrightness').onchange=e=>post('/api/display',{dayBrightness:e.target.value});$('nightBrightness').oninput=e=>$('nightBrightnessValue').textContent=e.target.value+'/255';$('nightBrightness').onchange=e=>post('/api/display',{nightBrightness:e.target.value});
 loadState();setInterval(loadState,15000);
 </script>
 </body>
@@ -151,17 +170,21 @@ loadState();setInterval(loadState,15000);
 
 WebUI::WebUI()
     : server(80), backlights(nullptr), tfts(nullptr), clock(nullptr),
-      stored_config(nullptr), display_schedule(nullptr), started(false), mdns_started(false)
+      stored_config(nullptr), display_schedule(nullptr), weather_clock(nullptr),
+      started(false), mdns_started(false)
 {
 }
 
-void WebUI::begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_, DisplaySchedule *display_schedule_)
+void WebUI::begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_,
+                  StoredConfig *stored_config_, DisplaySchedule *display_schedule_,
+                  WeatherClock *weather_clock_)
 {
   backlights = backlights_;
   tfts = tfts_;
   clock = clock_;
   stored_config = stored_config_;
   display_schedule = display_schedule_;
+  weather_clock = weather_clock_;
 
   installRoutes();
   server.begin();
@@ -192,7 +215,6 @@ void WebUI::loop()
 
   server.handleClient();
 
-  // If Wi-Fi was not ready when begin() ran, start mDNS after reconnect.
   if (!mdns_started && WiFi.status() == WL_CONNECTED)
   {
     if (MDNS.begin("foxtube"))
@@ -213,6 +235,11 @@ void WebUI::installRoutes()
   server.on("/api/clock", HTTP_POST, [this]() { handleClock(); });
   server.on("/api/panorama", HTTP_POST, [this]() { handlePanorama(); });
   server.on("/api/display", HTTP_POST, [this]() { handleDisplay(); });
+  server.on("/api/mode", HTTP_POST, [this]() { handleMode(); });
+  server.on("/api/weather/credentials", HTTP_POST, [this]() { handleWeatherCredentials(); });
+  server.on("/api/weather/config", HTTP_POST, [this]() { handleWeatherConfig(); });
+  server.on("/api/weather/test", HTTP_POST, [this]() { handleWeatherTest(); });
+  server.on("/api/weather/clear", HTTP_POST, [this]() { handleWeatherClear(); });
   server.onNotFound([this]() { handleNotFound(); });
 }
 
@@ -267,7 +294,7 @@ bool WebUI::parseTimeMinutes(const String &value, uint16_t &minutes)
 void WebUI::handleState()
 {
   String json;
-  json.reserve(700);
+  json.reserve(1800);
 
   json += "{\"tube\":{";
   json += "\"pattern\":";
@@ -329,6 +356,48 @@ void WebUI::handleState()
   json += ",\"appliedBrightness\":";
   json += String(display_schedule->getAppliedBrightness());
   json += "},";
+
+  json += "\"weather\":{";
+  json += "\"configured\":";
+  json += weather_clock->credentialsConfigured() ? "true" : "false";
+  json += ",\"mode\":";
+  json += weather_clock->isWeatherMode() ? "true" : "false";
+  json += ",\"refreshMinutes\":";
+  json += String(weather_clock->getRefreshMinutes());
+  json += ",\"stationMac\":\"";
+  json += jsonEscape(weather_clock->getStationMac());
+  json += "\",\"stationName\":\"";
+  json += jsonEscape(weather_clock->getStationName());
+  json += "\",\"hasData\":";
+  json += weather_clock->hasReading() ? "true" : "false";
+  json += ",\"tempF\":";
+  json += String(weather_clock->getTemperatureF(), 2);
+  json += ",\"humidity\":";
+  json += String(weather_clock->getHumidity(), 1);
+  json += ",\"windMph\":";
+  json += String(weather_clock->getWindMph(), 2);
+  json += ",\"dailyRainIn\":";
+  json += String(weather_clock->getDailyRainIn(), 3);
+  json += ",\"ageSeconds\":";
+  json += String(weather_clock->getLastSuccessAgeSeconds());
+  json += ",\"stale\":";
+  json += weather_clock->isStale() ? "true" : "false";
+  json += ",\"lastError\":\"";
+  json += jsonEscape(weather_clock->getLastError());
+  json += "\",\"stations\":[";
+
+  for (uint8_t i = 0; i < weather_clock->getStationCount(); ++i)
+  {
+    if (i)
+      json += ",";
+    const WeatherClock::StationInfo &station = weather_clock->getStation(i);
+    json += "{\"mac\":\"";
+    json += jsonEscape(station.mac);
+    json += "\",\"name\":\"";
+    json += jsonEscape(station.name);
+    json += "\"}";
+  }
+  json += "]},";
 
   json += "\"panorama\":";
   json += tfts->isPanoramaMode() ? "true" : "false";
@@ -440,6 +509,12 @@ void WebUI::redrawClock()
   if (!tfts->isEnabled() || tfts->isPanoramaMode())
     return;
 
+  if (weather_clock != nullptr && weather_clock->isWeatherMode())
+  {
+    weather_clock->render(true);
+    return;
+  }
+
   tfts->setDigit(SECONDS_ONES, clock->getSecondsOnes(), TFTs::force);
   tfts->setDigit(SECONDS_TENS, clock->getSecondsTens(), TFTs::force);
   tfts->setDigit(MINUTES_ONES, clock->getMinutesOnes(), TFTs::force);
@@ -514,6 +589,101 @@ void WebUI::handleDisplay()
   }
 
   display_schedule->applyNow(clock->getHour24(), clock->getMinute());
+  sendOk();
+}
+
+void WebUI::handleMode()
+{
+  if (!server.hasArg("mode"))
+  {
+    server.send(400, "text/plain", "Missing display mode.");
+    return;
+  }
+
+  const String requested = server.arg("mode");
+
+  if (requested == "panorama")
+  {
+    if (!tfts->isPanoramaMode())
+      tfts->enablePanorama(100);
+  }
+  else if (requested == "weather")
+  {
+    if (tfts->isPanoramaMode())
+      tfts->disablePanorama();
+
+    weather_clock->setMode(WeatherClock::weather_mode);
+    weather_clock->requestRefresh();
+    weather_clock->render(true);
+  }
+  else if (requested == "normal")
+  {
+    if (tfts->isPanoramaMode())
+      tfts->disablePanorama();
+
+    weather_clock->setMode(WeatherClock::normal_mode);
+    redrawClock();
+  }
+  else
+  {
+    server.send(400, "text/plain", "Unknown display mode.");
+    return;
+  }
+
+  sendOk();
+}
+
+void WebUI::handleWeatherCredentials()
+{
+  if (!server.hasArg("apiKey") || !server.hasArg("applicationKey"))
+  {
+    server.send(400, "text/plain", "Both Ambient Weather keys are required.");
+    return;
+  }
+
+  if (!weather_clock->saveCredentials(server.arg("apiKey"), server.arg("applicationKey")))
+  {
+    server.send(400, "text/plain", "Ambient Weather keys cannot be blank.");
+    return;
+  }
+
+  sendOk();
+}
+
+void WebUI::handleWeatherConfig()
+{
+  if (server.hasArg("refresh"))
+  {
+    const int minutes = constrain(server.arg("refresh").toInt(), 1, 60);
+    weather_clock->setRefreshMinutes(uint16_t(minutes));
+  }
+
+  if (server.hasArg("station"))
+    weather_clock->setStationMac(server.arg("station"));
+
+  sendOk();
+}
+
+void WebUI::handleWeatherTest()
+{
+  if (!weather_clock->credentialsConfigured())
+  {
+    server.send(400, "text/plain", "Save Ambient Weather credentials first.");
+    return;
+  }
+
+  if (!weather_clock->fetchNow())
+  {
+    server.send(502, "text/plain", weather_clock->getLastError());
+    return;
+  }
+
+  sendOk();
+}
+
+void WebUI::handleWeatherClear()
+{
+  weather_clock->clearCredentials();
   sendOk();
 }
 

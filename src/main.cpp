@@ -22,9 +22,8 @@
 
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
 #include "WebUI.h"
-#ifdef HARDWARE_IPSTUBE_S3_CLOCK
 #include "DisplaySchedule.h"
-#endif
+#include "WeatherClock.h"
 #endif
 
 #ifdef GEOLOCATION_ENABLED
@@ -302,6 +301,9 @@ void setup()
   tfts.print("Clock start...");
   Serial.println("\nClock start-up...");
   uclock.begin(&stored_config.config.uclock);
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  weather_clock.begin(&tfts, &uclock);
+#endif
   tfts.println("Done!");
   Serial.println("\nClock start-up done!");
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -358,7 +360,7 @@ void setup()
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
   // Start the LAN-only FoxTube browser controls after Wi-Fi, clock, LEDs,
   // and displays are initialized. The page itself lives in program flash.
-  webui.begin(&backlights, &tfts, &uclock, &stored_config, &display_schedule);
+  webui.begin(&backlights, &tfts, &uclock, &stored_config, &display_schedule, &weather_clock);
 #endif
 
   tfts.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -698,6 +700,8 @@ void loop()
   uclock.loop();
 
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  weather_clock.loop();
+
   // FoxTube S3 uses the persistent runtime day/night display schedule.
   display_schedule.loop(uclock.getHour24(), uclock.getMinute());
 #elif defined(DIMMING)
@@ -816,6 +820,17 @@ void loop()
       }
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
+      // Normal clock vs HH:MM + weather display mode
+      else if (menu_state == Menu::weather_clock_mode)
+      {
+        if (menu_change != 0)
+        {
+          weather_clock.toggleMode();
+        }
+        setupMenu();
+        tfts.println("Clock mode:");
+        tfts.println(weather_clock.isWeatherMode() ? "Weather" : "Normal");
+      }
       // Automatic Day/Night Display Brightness
       else if (menu_state == Menu::display_schedule)
       {
@@ -1361,6 +1376,17 @@ void processGeoLocUpdate()
 
 void updateClockDisplay(TFTs::show_t show)
 {
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  if (weather_clock.isWeatherMode())
+  {
+    // Keep menu text stable while the one-button menu is open. A forced
+    // redraw on menu exit restores the HH:MM + weather layout.
+    if (menu.getState() == Menu::idle)
+      weather_clock.render(show == TFTs::force);
+    return;
+  }
+#endif
+
   // Refresh, starting with seconds.
   tfts.setDigit(SECONDS_ONES, uclock.getSecondsOnes(), show);
   tfts.setDigit(SECONDS_TENS, uclock.getSecondsTens(), show);

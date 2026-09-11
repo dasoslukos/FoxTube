@@ -12,13 +12,14 @@ class Clock;
 class DisplaySchedule;
 class StoredConfig;
 class TFTs;
+class WeatherClock;
 
 class WebUI
 {
 public:
   WebUI();
 
-  void begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_, DisplaySchedule *display_schedule_);
+  void begin(Backlights *backlights_, TFTs *tfts_, Clock *clock_, StoredConfig *stored_config_, DisplaySchedule *display_schedule_, WeatherClock *weather_clock_);
   void loop();
 
 private:
@@ -28,6 +29,7 @@ private:
   Clock *clock;
   StoredConfig *stored_config;
   DisplaySchedule *display_schedule;
+  WeatherClock *weather_clock;
   bool started;
   bool mdns_started;
 
@@ -39,6 +41,11 @@ private:
   void handleClock();
   void handlePanorama();
   void handleDisplay();
+  void handleMode();
+  void handleWeatherCredentials();
+  void handleWeatherConfig();
+  void handleWeatherTest();
+  void handleWeatherClear();
   void handleNotFound();
 
   void sendOk();

@@ -56,6 +56,24 @@ public:
   void redrawPanorama();
   bool isPanoramaMode() const { return panorama_mode; }
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  // Weather clock mode keeps the normal clock time internally but renders:
+  //   HH | HH | : | MM | MM | WEATHER
+  void setWeatherMode(bool enabled);
+  bool isWeatherMode() const { return weather_mode; }
+  void drawWeatherClock(uint8_t hours_tens,
+                        uint8_t hours_ones,
+                        uint8_t minutes_tens,
+                        uint8_t minutes_ones,
+                        bool weather_valid,
+                        float temp_f,
+                        float humidity,
+                        float wind_mph,
+                        float daily_rain_in,
+                        bool stale,
+                        uint32_t age_seconds);
+#endif
+
   // Controls the power to all displays
   void enableAllDisplays();
   void disableAllDisplays();
@@ -80,6 +98,9 @@ private:
   // Panorama state. base file 100 means 100.bmp .. 105.bmp.
   bool panorama_mode = false;
   uint8_t panorama_base_file = 100;
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  bool weather_mode = false;
+#endif
 
   bool FileExists(const char *path);
   int8_t CountNumberOfClockFaces();

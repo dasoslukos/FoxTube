@@ -29,6 +29,7 @@ public:
     strip_intensity,     // Change the bottom LED strip brightness independently.
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    weather_clock_mode, // Toggle normal clock vs HH:MM + weather mode.
     display_schedule,    // Enable/disable automatic day/night screen brightness.
     display_day_start,   // Set the beginning of day mode.
     display_day_brightness, // Set TFT brightness used during day mode.
@@ -56,6 +57,7 @@ public:
     strip_intensity,     // Change the bottom LED strip brightness independently.
 #endif
 #ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    weather_clock_mode, // Toggle normal clock vs HH:MM + weather mode.
     display_schedule,    // Enable/disable automatic day/night screen brightness.
     display_day_start,   // Set the beginning of day mode.
     display_day_brightness, // Set TFT brightness used during day mode.

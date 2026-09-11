@@ -2,6 +2,159 @@
 
 ![EleksTube IPS clock](/docs/ImagesMD/EleksTube_IPS_Classic_Edition.jpg)
 
+<!-- FOXTube-S3-START -->
+## 🦊 FoxTube / IPSTube ESP32-S3 development branch
+
+This branch contains an experimental port of EleksTubeHAX to a newer
+**IPSTube ESP32-S3** clock, plus a set of FoxTube-specific features developed
+for that hardware.
+
+### Hardware target
+
+The current FoxTube target uses:
+
+- ESP32-S3-WROOM-1U
+- 8 MB flash
+- 6 × ST7789 135×240 TFT displays
+- 6 RGB LEDs behind the tubes
+- 28-pixel RGB strip under the clock
+- single-button menu
+- hardware PWM display brightness
+- NTP timekeeping (no RTC/battery on this board)
+
+Build with the dedicated PlatformIO environment:
+
+```bash
+pio run -e IPSTube_S3
+```
+
+Build the LittleFS image when clock-face or panorama assets change:
+
+```bash
+pio run -e IPSTube_S3 -t buildfs
+```
+
+### FoxTube features
+
+#### Local web control
+
+FoxTube exposes a responsive local control page at:
+
+```text
+http://foxtube.local/
+```
+
+The web UI can control the clock face, 12/24-hour mode, leading zero behavior,
+tube LEDs, bottom RGB strip, display mode, panorama, display brightness schedule,
+and Ambient Weather integration.
+
+The control page is local-only; no cloud service is required for normal clock
+control.
+
+#### Fox Den clock face
+
+Clock face 8 is the custom **Fox Den** face, using files `80.bmp` through
+`89.bmp`.
+
+#### Panorama mode
+
+The six 135×240 displays can act as one 810×240 panoramic display.
+
+Panorama assets use:
+
+```text
+100.bmp ... 105.bmp
+```
+
+A long press of the rear button while the clock is idle toggles Panorama mode.
+
+#### Independent RGB lighting
+
+The RGB chain contains 34 pixels:
+
+```text
+0–5    six tube LEDs
+6–33   28-pixel bottom strip
+```
+
+The tube LEDs and bottom strip have independent pattern, color, and brightness
+settings.
+
+#### Configurable day/night display brightness
+
+FoxTube stores a persistent TFT brightness schedule in ESP32 NVS.
+
+The day and night start times and brightness levels can be changed from either
+the one-button menu or the local web UI.
+
+#### Weather Clock
+
+Weather mode changes the six physical displays to:
+
+```text
+[ HH tens ] [ HH ones ] [ : ] [ MM tens ] [ MM ones ] [ WEATHER ]
+```
+
+The colon uses the Fox Den-style `106.bmp` artwork.
+
+The right-most tube is rendered dynamically and currently shows:
+
+- temperature
+- humidity
+- wind speed
+- daily rain
+- update age / stale indication
+
+Weather data comes from the **Ambient Weather** API. The API key and application
+key are entered from the FoxTube local web page and stored in a separate ESP32
+NVS namespace (`foxweather`); they are not compiled into the firmware.
+
+After credentials are saved, FoxTube discovers the stations available on the
+Ambient Weather account and allows the desired station and refresh interval to
+be selected from the web UI.
+
+The default refresh interval is 5 minutes. If a request fails, FoxTube retains
+the last successful reading rather than blanking the weather display.
+
+### Flashing the ESP32-S3 build
+
+Example for the current 8 MB partition layout:
+
+```bash
+export PORT=/dev/ttyACM0
+
+esptool --port "$PORT" --baud 460800 write-flash \
+  --flash-mode dio \
+  --flash-freq 80m \
+  --flash-size 8MB \
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin
+```
+
+When LittleFS has also changed:
+
+```bash
+esptool --port "$PORT" --baud 460800 write-flash \
+  --flash-mode dio \
+  --flash-freq 80m \
+  --flash-size 8MB \
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin \
+  0x140000 .pio/build/IPSTube_S3/littlefs.bin
+```
+
+Normal updates do **not** require a flash erase, which preserves the clock's
+NVS configuration.
+
+### Development status
+
+The ESP32-S3/FoxTube work is currently maintained on the `ipstube-s3` branch.
+It is based on EleksTubeHAX and is still considered a hardware-specific
+development port rather than an upstream-supported target.
+
+> **Credential note:** before publishing a fork, make sure local Wi-Fi
+> credentials are removed from tracked source and scrubbed from Git history.
+<!-- FOXTube-S3-END -->
+
+
 #### This is the "Home Assistant Edition" with extendent MQTT support for Home Assistant, more info see below
 
 ## 1\. Supported hardware models

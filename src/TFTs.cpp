@@ -288,6 +288,159 @@ void TFTs::redrawPanorama()
   Serial.println("Panorama drawn.");
 }
 
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+void TFTs::setWeatherMode(bool enabled)
+{
+  weather_mode = enabled;
+  InvalidateImageInBuffer();
+
+  Serial.print("Weather clock mode ");
+  Serial.println(weather_mode ? "ON" : "OFF");
+}
+
+void TFTs::drawWeatherClock(uint8_t hours_tens,
+                            uint8_t hours_ones,
+                            uint8_t minutes_tens,
+                            uint8_t minutes_ones,
+                            bool weather_valid,
+                            float temp_f,
+                            float humidity,
+                            float wind_mph,
+                            float daily_rain_in,
+                            bool stale,
+                            uint32_t age_seconds)
+{
+  if (!TFTsEnabled || panorama_mode || !weather_mode)
+    return;
+
+  constexpr uint8_t WEATHER_COLON_FILE = 106;
+
+  auto drawClockBitmap = [this](uint8_t logical_digit, uint8_t value)
+  {
+    chip_select.setDigit(logical_digit);
+
+    if (value == blanked)
+      fillScreen(TFT_BLACK);
+    else
+      DrawImage(current_graphic * 10 + value);
+
+#ifdef CS_DIRECT_GPIO
+    chip_select.update();
+#endif
+  };
+
+  // Physical left -> right on the S3:
+  // HOURS_TENS | HOURS_ONES | MINUTES_TENS | MINUTES_ONES |
+  // SECONDS_TENS | SECONDS_ONES
+  //
+  // Weather mode re-purposes those positions as:
+  // HH tens | HH ones | colon | MM tens | MM ones | weather
+  drawClockBitmap(HOURS_TENS, hours_tens);
+  drawClockBitmap(HOURS_ONES, hours_ones);
+
+  chip_select.setDigit(MINUTES_TENS);
+#ifdef USE_CLK_FILES
+  const bool colon_exists = FileExists("/106.clk");
+#else
+  const bool colon_exists = FileExists("/106.bmp");
+#endif
+  if (colon_exists)
+  {
+    DrawImage(WEATHER_COLON_FILE);
+  }
+  else
+  {
+    // Safe fallback if LittleFS has not yet been updated with 106.bmp.
+    fillScreen(TFT_BLACK);
+    fillCircle(TFT_WIDTH / 2, 82, 12, TFT_ORANGE);
+    fillCircle(TFT_WIDTH / 2, 158, 12, TFT_ORANGE);
+  }
+#ifdef CS_DIRECT_GPIO
+  chip_select.update();
+#endif
+
+  drawClockBitmap(MINUTES_ONES, minutes_tens);
+  drawClockBitmap(SECONDS_TENS, minutes_ones);
+
+  // Right-most tube: dynamic weather panel.
+  chip_select.setDigit(SECONDS_ONES);
+  fillScreen(TFT_BLACK);
+
+  // A compact FoxTube-styled header so we can spend more pixels on the data.
+  fillRoundRect(5, 6, TFT_WIDTH - 10, 21, 6, TFT_DARKGREY);
+  setTextColor(TFT_ORANGE, TFT_DARKGREY);
+  setCursor(16, 10, 2);
+  print("FOX WX");
+
+  if (!weather_valid)
+  {
+    setTextColor(TFT_WHITE, TFT_BLACK);
+    setCursor(13, 74, 4);
+    print("WAIT");
+    setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+    setCursor(27, 114, 2);
+    print("Fetching");
+    setCursor(18, 134, 2);
+    print("weather...");
+  }
+  else
+  {
+    // Temperature remains the headline, but the secondary metrics are made
+    // much larger by abbreviating the labels.
+    setTextColor(TFT_ORANGE, TFT_BLACK);
+    setCursor(13, 34, 4);
+    printf("%.0fF", temp_f);
+
+    drawFastHLine(7, 66, TFT_WIDTH - 14, TFT_DARKGREY);
+
+    setTextColor(TFT_CYAN, TFT_BLACK);
+    setCursor(8, 76, 4);
+    printf("H %.0f%%", humidity);
+
+    setTextColor(TFT_SKYBLUE, TFT_BLACK);
+    setCursor(8, 111, 4);
+    printf("W %.1f", wind_mph);
+    setCursor(89, 128, 1);
+    print("mph");
+
+    setTextColor(TFT_MAGENTA, TFT_BLACK);
+    setCursor(8, 146, 4);
+    printf("R %.2f\"", daily_rain_in);
+
+    const uint32_t age_minutes = age_seconds / 60UL;
+    if (stale)
+    {
+      setTextColor(TFT_RED, TFT_BLACK);
+      setCursor(8, 204, 2);
+      print("STALE ");
+      print(age_minutes);
+      print("m");
+    }
+    else
+    {
+      setTextColor(TFT_LIGHTGREY, TFT_BLACK);
+      setCursor(8, 204, 2);
+      if (age_seconds < 60)
+        print("updated now");
+      else
+      {
+        print("updated ");
+        print(age_minutes);
+        print("m");
+      }
+    }
+  }
+
+#ifdef CS_DIRECT_GPIO
+  chip_select.update();
+#endif
+
+  // Weather/colon drawing uses the shared image buffer too. Invalidate it so
+  // normal clock preloading never assumes the last special image is reusable.
+  InvalidateImageInBuffer();
+}
+#endif // HARDWARE_IPSTUBE_S3_CLOCK
+
 void TFTs::setDigit(uint8_t digit, uint8_t value, show_t show)
 {
   if (TFTsEnabled)
@@ -296,9 +449,14 @@ void TFTs::setDigit(uint8_t digit, uint8_t value, show_t show)
     digits[digit] = value;
 
     // Keep tracking the current time internally, but do not overwrite
-    // the six-screen artwork while panorama mode is active.
+    // special full-display layouts while they are active.
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+    if (panorama_mode || weather_mode)
+      return;
+#else
     if (panorama_mode)
       return;
+#endif
 
     if (show != no && (old_value != value || show == force))
     {
@@ -354,9 +512,14 @@ void TFTs::showDigit(uint8_t digit)
 
 void TFTs::LoadNextImage()
 {
-  // Normal clock preloading is unnecessary while panorama artwork is shown.
+  // Normal clock preloading is unnecessary while special layouts are shown.
+#ifdef HARDWARE_IPSTUBE_S3_CLOCK
+  if (panorama_mode || weather_mode)
+    return;
+#else
   if (panorama_mode)
     return;
+#endif
 
   if (NextFileRequired != FileInBuffer)
   {
