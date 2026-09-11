@@ -80,7 +80,10 @@ SPI3_HOST = 2
   #elif CONFIG_IDF_TARGET_ESP32S2
     #define SPI_PORT 2 //FSPI(ESP32 S2)
   #elif CONFIG_IDF_TARGET_ESP32S3
-    #define SPI_PORT FSPI
+    // ESP32-S3 register index is 2 here.
+    // Arduino's FSPI enum is 0 on Arduino-ESP32 2.0.17 and must not
+    // be used directly as the TFT_eSPI low-level register port index.
+    #define SPI_PORT 2
   #endif
 #endif
 
