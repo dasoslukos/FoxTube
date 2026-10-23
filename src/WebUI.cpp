@@ -6,6 +6,7 @@
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "Backlights.h"
 #include "Clock.h"
@@ -24,7 +25,7 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
 <style>
 :root{color-scheme:dark;--bg:#09070f;--card:#151020;--text:#f7eefc;--muted:#aa9bb8;--orange:#ff8a36;--purple:#9f68ff;--blue:#5aa7ff;--green:#44d79d;--red:#ff5f78;--line:#30253f}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#25133a 0,transparent 34%),radial-gradient(circle at 80% 10%,#132649 0,transparent 28%),var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100vh}
-.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.accent-green{border-top:2px solid var(--green)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],input[type=password],button{width:100%}select,input[type=time],input[type=password],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.modebuttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.modebuttons button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;background:#221126}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.danger{border-color:#783040;color:#ffb6c2}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.wxstatus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:min(420px,calc(100% - 36px))}.toast.show{opacity:1;transform:none}.toast.bad{border-color:var(--red);color:#ffd6dc}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}.good{color:var(--green)}.badtext{color:#ff8798}.credentials{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.wrap{width:min(980px,calc(100% - 28px));margin:0 auto;padding:28px 0 54px}.hero{display:flex;gap:16px;align-items:center;margin-bottom:22px}.fox{font-size:54px;filter:drop-shadow(0 0 14px #ff7a32)}h1{margin:0;font-size:34px}.sub{color:var(--muted);margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,rgba(27,20,40,.96),rgba(15,12,24,.96));border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 12px 34px #0007}.wide{grid-column:1/-1}.card h2{font-size:18px;margin:0 0 15px}.accent-orange{border-top:2px solid var(--orange)}.accent-purple{border-top:2px solid var(--purple)}.accent-blue{border-top:2px solid var(--blue)}.accent-green{border-top:2px solid var(--green)}.row{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;margin:12px 0}.label{font-size:14px;color:#d9cce4}.value{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;min-width:38px;text-align:right}select,input[type=range],input[type=color],input[type=time],input[type=number],input[type=text],input[type=password],button{width:100%}select,input[type=time],input[type=number],input[type=text],input[type=password],button{background:#100c18;color:var(--text);border:1px solid #403151;border-radius:10px;padding:10px 12px;font-size:14px}input[type=color]{height:40px;border:1px solid #403151;border-radius:10px;padding:3px;background:#100c18}input[type=range]{accent-color:var(--purple)}.toggle{display:flex;gap:8px}.toggle button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;color:#fff}.modebuttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.modebuttons button.active{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset;background:#221126}.big{padding:13px 16px;font-weight:700;background:linear-gradient(90deg,#7b45db,#d764bc,#ef7d35);border:0;cursor:pointer}.danger{border-color:#783040;color:#ffb6c2}.status{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.pill{background:#0d0a13;border:1px solid #2d2338;border-radius:12px;padding:11px}.pill b{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}.pill span{font-size:14px}.wxstatus{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.toast{position:fixed;right:18px;bottom:18px;background:#171021;border:1px solid #714da0;border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:min(420px,calc(100% - 36px))}.toast.show{opacity:1;transform:none}.toast.bad{border-color:var(--red);color:#ffd6dc}.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}.mode{display:inline-block;padding:5px 9px;border:1px solid #403151;border-radius:999px;color:var(--muted);font-size:12px}.mode.night{border-color:var(--purple);color:#d9c6ff}.mode.day{border-color:var(--orange);color:#ffd1ad}.good{color:var(--green)}.badtext{color:#ff8798}.credentials{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{grid-template-columns:110px 1fr auto}.status,.wxstatus{grid-template-columns:repeat(2,1fr)}.credentials{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.modebuttons{grid-template-columns:1fr}}
 </style>
 </head>
@@ -115,9 +116,37 @@ static const char FOXTube_WEB_PAGE[] PROGMEM = R"HTML(
     <section class="card wide accent-blue">
       <h2>Display Day / Night</h2>
       <div class="row"><div class="label">Auto schedule</div><div class="toggle"><button id="displayAutoOn">On</button><button id="displayAutoOff">Off</button></div><span class="mode" id="displayMode">—</span></div>
-      <div class="row"><div class="label">Day starts</div><input id="dayStart" type="time" step="60"><span></span></div>
+      <div class="row"><div class="label">Schedule method</div><select id="scheduleMethod"><option value="fixed">Fixed times</option><option value="solar">Sunrise / Sunset</option></select><span></span></div>
+      <div id="solarSettings" style="display:none">
+        <div class="row"><div class="label">Latitude</div><input id="solarLat" type="number" min="-89.9" max="89.9" step="0.0001"><span></span></div>
+        <div class="row"><div class="label">Longitude</div><input id="solarLon" type="number" min="-180" max="180" step="0.0001"><span></span></div>
+        <div class="row"><div class="label">Local time zone</div><select id="solarZone">
+          <option value="0">US Eastern (Athens)</option><option value="1">US Central</option>
+          <option value="2">US Mountain</option><option value="3">US Pacific</option>
+          <option value="4">Arizona (no DST)</option><option value="5">UTC</option>
+          <option value="6">United Kingdom</option><option value="7">Central Europe</option>
+          <option value="8">Australia Eastern</option><option value="9">New Zealand</option>
+          <option value="10">Custom POSIX TZ rule</option>
+        </select><span></span></div>
+        <div class="row" id="solarCustomZoneRow" style="display:none"><div class="label">Custom TZ rule</div><input id="solarCustomTZ" type="text" maxlength="63" placeholder="e.g. HST10"><span></span></div>
+        <div class="row"><div class="label">Sunrise offset</div><select id="sunriseOffset">
+          <option value="-60">60 min before</option><option value="-30">30 min before</option>
+          <option value="-15">15 min before</option><option value="0">At sunrise</option>
+          <option value="15">15 min after</option><option value="30">30 min after</option>
+          <option value="60">60 min after</option>
+        </select><span></span></div>
+        <div class="row"><div class="label">Sunset offset</div><select id="sunsetOffset">
+          <option value="-60">60 min before</option><option value="-30">30 min before</option>
+          <option value="-15">15 min before</option><option value="0">At sunset</option>
+          <option value="15">15 min after</option><option value="30">30 min after</option>
+          <option value="60">60 min after</option>
+        </select><span></span></div>
+        <div class="row"><div class="label">Today</div><div class="label" id="solarToday">Calculating...</div><button id="solarAthens">Use Athens</button></div>
+        <div class="hint">Solar times are calculated on the clock, with no new API calls. Timezone here governs brightness only; the Clock UTC offset is unchanged. At extreme latitudes or without valid time, fixed times are used.</div>
+      </div>
+      <div id="fixedDayStart"><div class="row"><div class="label">Day starts</div><input id="dayStart" type="time" step="60"><span></span></div></div>
       <div class="row"><div class="label">Day brightness</div><input id="dayBrightness" type="range" min="0" max="255" step="1"><div class="value" id="dayBrightnessValue"></div></div>
-      <div class="row"><div class="label">Night starts</div><input id="nightStart" type="time" step="60"><span></span></div>
+      <div id="fixedNightStart"><div class="row"><div class="label">Night starts</div><input id="nightStart" type="time" step="60"><span></span></div></div>
       <div class="row"><div class="label">Night brightness</div><input id="nightBrightness" type="range" min="0" max="255" step="1"><div class="value" id="nightBrightnessValue"></div></div>
       <div class="hint">Controls the six TFT screens only. Tube LEDs and the bottom strip keep their own independent brightness settings.</div>
     </section>
@@ -142,13 +171,15 @@ function showToast(msg='Saved ✨',bad=false){const t=$('toast');t.textContent=m
 async function post(url,data={},quiet=false){const body=new URLSearchParams(data);const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});if(!r.ok){const msg=await r.text();showToast(msg||'Request failed',true);throw new Error(msg)}if(!quiet)showToast();await loadState();return r}
 function active(id,on){$(id).classList.toggle('active',!!on)}
 function num(v,d=1){return Number(v).toFixed(d)}
+function fmtMins(v){return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0')}
+function showSolarFields(){const sun=$('scheduleMethod').value==='solar';$('solarSettings').style.display=sun?'block':'none';$('fixedDayStart').style.display=sun?'none':'block';$('fixedNightStart').style.display=sun?'none':'block';$('solarCustomZoneRow').style.display=$('solarZone').value==='10'?'grid':'none'}
 function apply(s){
 state=s;
 $('tubePattern').value=s.tube.pattern;$('tubeColor').value=s.tube.color;$('tubeIntensity').value=s.tube.intensity;$('tubeIntensityValue').textContent=s.tube.intensity+'/7';
 if(s.strip){$('stripPattern').value=s.strip.pattern;$('stripColor').value=s.strip.color;$('stripIntensity').value=s.strip.intensity;$('stripIntensityValue').textContent=s.strip.intensity+'/7'}else{$('stripCard').style.display='none'}
 $('face').innerHTML=Array.from({length:s.clock.faces},(_,i)=>`<option value="${i+1}">Face ${i+1}${i+1===8?' · Fox Den':''}</option>`).join('');$('face').value=s.clock.face;
 active('h12',s.clock.twelveHour);active('h24',!s.clock.twelveHour);active('zeroOn',!s.clock.blankZero);active('zeroOff',s.clock.blankZero);
-if(s.display){active('displayAutoOn',s.display.enabled);active('displayAutoOff',!s.display.enabled);$('dayStart').value=s.display.dayStart;$('nightStart').value=s.display.nightStart;$('dayBrightness').value=s.display.dayBrightness;$('nightBrightness').value=s.display.nightBrightness;$('dayBrightnessValue').textContent=s.display.dayBrightness+'/255';$('nightBrightnessValue').textContent=s.display.nightBrightness+'/255';const dm=$('displayMode');dm.textContent=(s.display.isNight?'Night':'Day')+' · '+s.display.appliedBrightness;dm.classList.toggle('night',s.display.isNight);dm.classList.toggle('day',!s.display.isNight)}
+if(s.display){const d=s.display;active('displayAutoOn',d.enabled);active('displayAutoOff',!d.enabled);$('dayStart').value=d.dayStart;$('nightStart').value=d.nightStart;$('dayBrightness').value=d.dayBrightness;$('nightBrightness').value=d.nightBrightness;$('dayBrightnessValue').textContent=d.dayBrightness+'/255';$('nightBrightnessValue').textContent=d.nightBrightness+'/255';$('scheduleMethod').value=d.solar?'solar':'fixed';$('solarLat').value=d.latitude;$('solarLon').value=d.longitude;$('solarZone').value=d.zone;$('solarCustomTZ').value=d.customTZ;$('sunriseOffset').value=d.sunriseOffset;$('sunsetOffset').value=d.sunsetOffset;showSolarFields();$('solarToday').textContent=d.solar?(d.solarValid?'Sunrise '+fmtMins(d.sunriseMinutes)+' · Sunset '+fmtMins(d.sunsetMinutes):'Solar times unavailable · using fixed times'):'Fixed-time schedule selected';const dm=$('displayMode');dm.textContent=(d.isNight?'Night':'Day')+' · '+d.appliedBrightness;dm.classList.toggle('night',d.isNight);dm.classList.toggle('day',!d.isNight)}
 const mode=s.panorama?'panorama':((s.weather&&s.weather.mode)||'normal');active('modeNormal',mode==='normal');active('modeWeather',mode==='weather');active('modeCycle',mode==='cycle');active('modePanorama',mode==='panorama');
 if(s.weather){
   const c=$('weatherConfigured');c.textContent=s.weather.configured?'✓ Ambient Weather configured':'Ambient Weather credentials are not configured.';c.classList.toggle('good',s.weather.configured);c.classList.toggle('badtext',!s.weather.configured);
@@ -171,6 +202,14 @@ $('weatherTest').onclick=async()=>{try{await post('/api/weather/test',{},true);s
 $('weatherClear').onclick=()=>{if(confirm('Clear Ambient Weather credentials from FoxTube?'))post('/api/weather/clear')};
 $('weatherStation').onchange=e=>post('/api/weather/config',{station:e.target.value});$('weatherRefresh').onchange=e=>post('/api/weather/config',{refresh:e.target.value});
 $('displayAutoOn').onclick=()=>post('/api/display',{enabled:'1'});$('displayAutoOff').onclick=()=>post('/api/display',{enabled:'0'});$('dayStart').onchange=e=>post('/api/display',{dayStart:e.target.value});$('nightStart').onchange=e=>post('/api/display',{nightStart:e.target.value});$('dayBrightness').oninput=e=>$('dayBrightnessValue').textContent=e.target.value+'/255';$('dayBrightness').onchange=e=>post('/api/display',{dayBrightness:e.target.value});$('nightBrightness').oninput=e=>$('nightBrightnessValue').textContent=e.target.value+'/255';$('nightBrightness').onchange=e=>post('/api/display',{nightBrightness:e.target.value});
+$('scheduleMethod').onchange=e=>post('/api/display',{method:e.target.value});
+function saveSolarLocation(){post('/api/display',{lat:$('solarLat').value,lon:$('solarLon').value})}
+$('solarLat').onchange=saveSolarLocation;$('solarLon').onchange=saveSolarLocation;
+$('solarZone').onchange=e=>{showSolarFields();if(e.target.value==='10'&&!$('solarCustomTZ').value.trim())return;post('/api/display',{zone:e.target.value,customTZ:$('solarCustomTZ').value.trim()})};
+$('solarCustomTZ').onchange=e=>{if($('solarZone').value==='10')post('/api/display',{zone:'10',customTZ:e.target.value.trim()})};
+$('sunriseOffset').onchange=e=>post('/api/display',{sunriseOffset:e.target.value});
+$('sunsetOffset').onchange=e=>post('/api/display',{sunsetOffset:e.target.value});
+$('solarAthens').onclick=()=>post('/api/display',{resetSolar:'1'});
 loadState();setInterval(loadState,15000);
 </script>
 </body>
@@ -303,7 +342,7 @@ bool WebUI::parseTimeMinutes(const String &value, uint16_t &minutes)
 void WebUI::handleState()
 {
   String json;
-  json.reserve(1900);
+  json.reserve(2400);
 
   json += "{\"tube\":{";
   json += "\"pattern\":";
@@ -364,6 +403,27 @@ void WebUI::handleState()
   json += display_schedule->isNight(clock->getHour24(), clock->getMinute()) ? "true" : "false";
   json += ",\"appliedBrightness\":";
   json += String(display_schedule->getAppliedBrightness());
+  json += ",\"solar\":";
+  json += display_schedule->getSolarMode() ? "true" : "false";
+  json += ",\"latitude\":";
+  json += String(display_schedule->getLatitude(), 6);
+  json += ",\"longitude\":";
+  json += String(display_schedule->getLongitude(), 6);
+  json += ",\"zone\":";
+  json += String(display_schedule->getZone());
+  json += ",\"customTZ\":\"";
+  json += jsonEscape(display_schedule->getCustomTZ());
+  json += "\"";
+  json += ",\"sunriseOffset\":";
+  json += String(display_schedule->getSunriseOffset());
+  json += ",\"sunsetOffset\":";
+  json += String(display_schedule->getSunsetOffset());
+  json += ",\"solarValid\":";
+  json += display_schedule->solarValid() ? "true" : "false";
+  json += ",\"sunriseMinutes\":";
+  json += String(display_schedule->sunriseMinutes());
+  json += ",\"sunsetMinutes\":";
+  json += String(display_schedule->sunsetMinutes());
   json += "},";
 
   json += "\"weather\":{";
@@ -565,6 +625,48 @@ void WebUI::handleDisplay()
     return;
   }
 
+  // Validate new solar inputs BEFORE modifying the saved configuration.
+  if (server.hasArg("method") && server.arg("method") != "solar" && server.arg("method") != "fixed")
+  {
+    server.send(400, "text/plain", "Unknown schedule method."); return;
+  }
+  if (server.hasArg("lat") || server.hasArg("lon"))
+  {
+    if (!server.hasArg("lat") || !server.hasArg("lon"))
+    {
+      server.send(400, "text/plain", "Both latitude and longitude are required."); return;
+    }
+    const String latText = server.arg("lat");
+    const String lonText = server.arg("lon");
+    char *endLat = nullptr, *endLon = nullptr;
+    const double lat = strtod(latText.c_str(), &endLat);
+    const double lon = strtod(lonText.c_str(), &endLon);
+    if (endLat == latText.c_str() || *endLat != '\0' ||
+        endLon == lonText.c_str() || *endLon != '\0' ||
+        !isfinite(lat) || !isfinite(lon) || fabs(lat) > 89.9 || fabs(lon) > 180.0)
+    {
+      server.send(400, "text/plain", "Invalid latitude or longitude."); return;
+    }
+    display_schedule->setLocation(lat, lon);
+  }
+  if (server.hasArg("zone"))
+  {
+    const int zone = server.arg("zone").toInt();
+    if (zone < 0 || zone >= SolarCalc::ZONE_COUNT ||
+        !display_schedule->setZone(uint8_t(zone), server.hasArg("customTZ")
+            ? server.arg("customTZ") : display_schedule->getCustomTZ()))
+    {
+      server.send(400, "text/plain", "Invalid timezone or custom POSIX TZ rule."); return;
+    }
+  }
+  if (server.hasArg("sunriseOffset"))
+    display_schedule->setSunriseOffset(constrain(server.arg("sunriseOffset").toInt(), -120, 120));
+  if (server.hasArg("sunsetOffset"))
+    display_schedule->setSunsetOffset(constrain(server.arg("sunsetOffset").toInt(), -120, 120));
+  if (server.hasArg("resetSolar") && server.arg("resetSolar") == "1")
+    display_schedule->resetAthens();
+  if (server.hasArg("method"))
+    display_schedule->setSolarMode(server.arg("method") == "solar");
   if (server.hasArg("enabled"))
     display_schedule->setEnabled(server.arg("enabled").toInt() != 0);
 

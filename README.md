@@ -1,5 +1,7 @@
 # 🦊 FoxTube
 
+**Current FoxTube firmware: v1.3.14 — Solar Day/Night Scheduling.**
+
 **FoxTube** is an ESP32-S3 port and feature-focused fork of
 [EleksTubeHAX](https://github.com/aly-fly/EleksTubeHAX) for newer **IPSTube**
 six-display clocks.
@@ -8,7 +10,7 @@ It keeps the excellent EleksTubeHAX foundation and adds a FoxTube-specific
 ESP32-S3 hardware port, a local responsive Web UI, custom clock artwork,
 panorama mode, independent RGB lighting controls, configurable display
 brightness scheduling, an Ambient Weather-powered weather clock mode, and
-automatic Normal/Weather display cycling.
+automatic Normal/Weather display cycling, and solar-aware day/night brightness.
 
 > **Project status:** FoxTube is a hardware-specific development fork. The
 > features documented here are developed and tested on the ESP32-S3 IPSTube
@@ -85,7 +87,7 @@ The Web UI currently provides control for:
 - bottom-strip RGB pattern, color, and brightness
 - Normal / Weather / Cycle / Panorama display modes
 - configurable Cycle interval
-- day/night TFT brightness scheduling
+- fixed-time or sunrise/sunset TFT brightness scheduling
 - Ambient Weather station configuration
 - weather refresh interval
 - station status and current readings
@@ -168,22 +170,36 @@ Rainbow, Pulse, Breath, Test, and Dark.
 
 ---
 
-### 🌗 Configurable day/night display brightness
+### 🌗 Solar-aware day/night display brightness
 
-FoxTube adds persistent TFT brightness scheduling.
+FoxTube supports both **fixed-time** and **Sunrise / Sunset** TFT brightness
+schedules, selectable from the local Web UI. The existing automatic schedule
+on/off toggle and independent day and night brightness sliders remain in place.
 
-The following can be configured from either the one-button menu or the Web UI:
+**Fixed times** uses manually configured day/night start times, which remain
+available as a fallback and are preserved when Solar mode is selected.
 
-- automatic schedule on/off
-- day start time
-- day display brightness
-- night start time
-- night display brightness
+**Sunrise / Sunset** calculates the sun's daily rise and set times on the
+ESP32-S3 itself, without another web API, API key, or weather request.
 
-These settings affect the six TFT screens only. The tube LEDs and bottom RGB
-strip keep their own independent brightness settings.
+- Default location: **Athens, Georgia** (`33.9519`, `-83.3576`).
+- Custom latitude and longitude can be entered in the Web UI.
+- Select a supported local time zone (including daylight-saving rules), or
+  enter advanced POSIX time-zone rules.
+- Set independent offsets before or after sunrise and sunset.
+- View today's calculated sunrise and sunset in the Web UI.
+- Toggle Fixed/Solar scheduling from the physical one-button menu.
 
-The schedule is stored in ESP32 NVS.
+The solar location/time zone determines **brightness transitions only**. It
+does not change the clock face's separately configured UTC offset. If valid
+time is unavailable or the sun does not rise/set at an extreme latitude, the
+clock falls back to the stored fixed-time boundaries.
+
+Both scheduling methods affect **only the six TFT screens**. The tube LEDs and
+bottom RGB strip retain their own independent brightness controls.
+
+The schedule, brightness values, solar location, time-zone selection, and
+sunrise/sunset offsets are stored in ESP32 NVS under `foxdisplay`.
 
 ---
 
@@ -332,7 +348,7 @@ esptool --port "$PORT" --baud 460800 write-flash \
   --flash-mode dio \
   --flash-freq 80m \
   --flash-size 8MB \
-  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.14.bin
 ```
 
 Windows example:
@@ -344,7 +360,7 @@ esptool --port $PORT --baud 460800 write-flash `
   --flash-mode dio `
   --flash-freq 80m `
   --flash-size 8MB `
-  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.14.bin
 ```
 
 Use:
@@ -364,7 +380,7 @@ esptool --port "$PORT" --baud 460800 write-flash \
   --flash-mode dio \
   --flash-freq 80m \
   --flash-size 8MB \
-  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin \
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.14.bin \
   0x140000 .pio/build/IPSTube_S3/littlefs.bin
 ```
 
@@ -375,7 +391,7 @@ esptool --port $PORT --baud 460800 write-flash `
   --flash-mode dio `
   --flash-freq 80m `
   --flash-size 8MB `
-  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.13.bin `
+  0x10000 .pio/build/IPSTube_S3/IPSTube_S3_v1.3.14.bin `
   0x140000 .pio/build/IPSTube_S3/littlefs.bin
 ```
 
@@ -408,7 +424,7 @@ Current FoxTube namespaces include:
 
 ```text
 foxstrip      bottom RGB strip settings
-foxdisplay    day/night TFT brightness schedule
+foxdisplay    fixed/solar TFT brightness and location settings
 foxweather    Ambient Weather, Clock Mode, and Cycle configuration
 ```
 
@@ -430,7 +446,7 @@ tested IPSTube S3 hardware, including:
 - NTP time
 - independent tube LEDs and bottom strip
 - panorama mode
-- configurable day/night display brightness
+- fixed-time and solar-aware day/night display brightness
 - Ambient Weather station discovery
 - Weather Clock mode
 - automatic Normal/Weather Cycle mode with configurable interval

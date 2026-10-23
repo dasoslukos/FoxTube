@@ -872,7 +872,19 @@ void loop()
         tfts.println("brightness:");
         tfts.println(display_schedule.getEnabled() ? "ON" : "OFF");
       }
-      // Day Mode Start
+      // Fixed time vs local sunrise/sunset. Location and timezone are on the Web UI.
+      else if (menu_state == Menu::display_schedule_method)
+      {
+        if (menu_change != 0)
+        {
+          display_schedule.setSolarMode(!display_schedule.getSolarMode());
+          display_schedule.applyNow(uclock.getHour24(), uclock.getMinute());
+        }
+        setupMenu();
+        tfts.println("Day/night time:");
+        tfts.println(display_schedule.getSolarMode() ? "Sunrise/Sunset" : "Fixed times");
+      }
+      // Day Mode Start (fallback times in solar mode)
       else if (menu_state == Menu::display_day_start)
       {
         if (menu_change != 0)

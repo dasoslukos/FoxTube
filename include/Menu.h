@@ -32,6 +32,7 @@ public:
     weather_clock_mode,     // Select Normal, Weather, or automatic Cycle mode.
     weather_cycle_interval, // Set seconds between Normal and Weather while cycling.
     display_schedule,       // Enable/disable automatic day/night screen brightness.
+    display_schedule_method, // Fixed-time or solar day/night calculation.
     display_day_start,   // Set the beginning of day mode.
     display_day_brightness, // Set TFT brightness used during day mode.
     display_night_start, // Set the beginning of night mode.
@@ -61,6 +62,7 @@ public:
     weather_clock_mode,     // Select Normal, Weather, or automatic Cycle mode.
     weather_cycle_interval, // Set seconds between Normal and Weather while cycling.
     display_schedule,       // Enable/disable automatic day/night screen brightness.
+    display_schedule_method, // Fixed-time or solar day/night calculation.
     display_day_start,   // Set the beginning of day mode.
     display_day_brightness, // Set TFT brightness used during day mode.
     display_night_start, // Set the beginning of night mode.
